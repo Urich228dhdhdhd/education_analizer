@@ -38,3 +38,9 @@ const TextStyle annotAuthorizationTextStyle = TextStyle(
   fontFamily: "Rubik",
   color: Color.fromARGB(255, 0, 0, 0),
 );
+const TextStyle styleDrawer = TextStyle(
+  fontSize: 15,
+  fontWeight: FontWeight.normal,
+  fontFamily: "Rubik",
+  color: primary3Color,
+);

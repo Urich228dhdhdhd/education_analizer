@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:education_analizer/controlles/auth_controller.dart';
 import 'package:education_analizer/model/user.dart';
+import 'package:education_analizer/pages/main_screan/main_page.dart';
 import 'package:education_analizer/repository/user_repository.dart';
 import 'package:get/get.dart';
 
@@ -18,6 +19,7 @@ class LoginPageController extends GetxController {
       User user = await userRepository.loginUser(login, password);
       authController.role.value = user.role ?? '';
       authController.name.value = user.username ?? "";
+      Get.to(() => const MainPage());
 
       log("Успешный вход: ${user.username}");
     } catch (e) {
