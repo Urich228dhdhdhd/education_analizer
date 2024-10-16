@@ -1,0 +1,35 @@
+import 'package:education_analizer/design/widgets/colors.dart';
+import 'package:flutter/material.dart';
+
+const TextStyle mainAuthorizationTextStyle = TextStyle(
+  fontSize: 16,
+  fontWeight: FontWeight.normal,
+  fontFamily: "Inter",
+  color: primary3Color,
+);
+
+const TextStyle buttonAuthorizationTextStyle = TextStyle(
+  fontSize: 16,
+  fontWeight: FontWeight.bold,
+  fontFamily: "Rubik",
+  color: primary5Color,
+);
+const TextStyle linkAuthorizationTextStyle = TextStyle(
+  fontSize: 16,
+  fontWeight: FontWeight.w700,
+  fontFamily: "Rubik",
+  color: primary3Color,
+);
+const TextStyle style2 = TextStyle(
+  fontSize: 15,
+  fontWeight: FontWeight.normal,
+  fontFamily: "Rubik",
+  color: primary3Color,
+);
+
+const TextStyle annotAuthorizationTextStyle = TextStyle(
+  fontSize: 12,
+  fontWeight: FontWeight.w700,
+  fontFamily: "Rubik",
+  color: Color.fromARGB(255, 0, 0, 0),
+);
