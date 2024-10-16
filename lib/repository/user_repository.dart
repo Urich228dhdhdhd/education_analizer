@@ -5,7 +5,7 @@ import 'package:education_analizer/model/user.dart';
 import 'package:get/get.dart';
 
 class UserRepository extends GetxService {
-  final String url = "http://localhost/:3000/api/users";
+  final String url = "http://192.168.100.8:3000/api/users"; //192.168.100.8
   final dio = Dio();
 
   Future<List<User>> getAllUsers() async {
@@ -52,6 +52,19 @@ class UserRepository extends GetxService {
       log("Удалено успешно");
     } else {
       throw Error();
+    }
+  }
+
+  Future<User> loginUser(String username, String password) async {
+    final response = await dio.post("$url/login", data: {
+      "username": username,
+      "password": password,
+    });
+
+    if (response.statusCode == 200) {
+      return User.fromJson(response.data["user"]);
+    } else {
+      throw Exception();
     }
   }
 }

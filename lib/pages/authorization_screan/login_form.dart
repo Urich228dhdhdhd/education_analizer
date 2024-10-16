@@ -4,6 +4,7 @@ import 'package:education_analizer/design/widgets/colors.dart';
 import 'package:education_analizer/design/widgets/dimentions.dart';
 import 'package:education_analizer/design/widgets/images.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 class LoginForm extends StatelessWidget {
@@ -31,20 +32,20 @@ class LoginForm extends StatelessWidget {
           TextField(
             controller: loginController,
             style: style2,
-            decoration: StylishInput(label: "ЛОгин"),
+            decoration: StylishInput(label: "Логин", image: userImage),
           ),
           const SizedBox(height: 15), // Уменьшили отступ между полями ввода
           TextField(
               controller: passwordController,
               style: style2,
               obscureText: true, // Скрываем текст пароля
-              decoration: StylishInput(label: "Gfhjkm")),
+              decoration: StylishInput(label: "Пароль", image: passwordImage)),
           const SizedBox(height: 25), // Отступ перед кнопкой
           ElevatedButton(
               onPressed: () {
                 pageController.goAuth(
-                    login: loginController.text,
-                    password: passwordController.text);
+                    login: loginController.text.toString(),
+                    password: passwordController.text.toString());
               },
               style: ElevatedButton.styleFrom(
                   backgroundColor: primary6Color,
@@ -55,13 +56,14 @@ class LoginForm extends StatelessWidget {
     );
   }
 
-  InputDecoration StylishInput({required String label}) {
+  InputDecoration StylishInput(
+      {required String label, required SvgPicture image}) {
     return InputDecoration(
       labelStyle: style2,
       labelText: label,
       prefixIcon: Padding(
         padding: const EdgeInsets.all(12),
-        child: userImage,
+        child: image,
       ),
       border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius32),

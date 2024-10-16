@@ -73,10 +73,13 @@ class LoginPage extends StatelessWidget {
               ),
 
               const Spacer(),
-              const Text(
-                "© 2024-2025 Учреждение образования «Минский\nГосударственный Колледж  Цифровых Технологий",
-                style: style2,
-                textAlign: TextAlign.center,
+              const Padding(
+                padding: EdgeInsets.only(bottom: 10),
+                child: Text(
+                  "© 2024-2025 Учреждение образования «Минский\nГосударственный Колледж  Цифровых Технологий",
+                  style: style3,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ],
           ),

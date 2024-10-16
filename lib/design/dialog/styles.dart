@@ -26,7 +26,12 @@ const TextStyle style2 = TextStyle(
   fontFamily: "Rubik",
   color: primary3Color,
 );
-
+const TextStyle style3 = TextStyle(
+  fontSize: 12,
+  fontWeight: FontWeight.w100,
+  fontFamily: "Rubik",
+  color: primary3Color,
+);
 const TextStyle annotAuthorizationTextStyle = TextStyle(
   fontSize: 12,
   fontWeight: FontWeight.w700,

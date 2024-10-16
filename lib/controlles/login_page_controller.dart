@@ -1,15 +1,27 @@
 import 'dart:developer';
 
 import 'package:education_analizer/controlles/auth_controller.dart';
+import 'package:education_analizer/model/user.dart';
+import 'package:education_analizer/repository/user_repository.dart';
 import 'package:get/get.dart';
 
 class LoginPageController extends GetxController {
   final AuthController authController;
-  LoginPageController({required this.authController});
+  final UserRepository userRepository;
 
-  void goAuth({required String login, required String password}) {
-    log(login);
-    log(password);
-    // authController
+  LoginPageController(this.userRepository, {required this.authController});
+
+  void goAuth({required String login, required String password}) async {
+    log("Попытка входа с логином: $login и паролем: $password");
+    const Duration(seconds: 3);
+    try {
+      User user = await userRepository.loginUser(login, password);
+      authController.role.value = user.role ?? '';
+      authController.name.value = user.username ?? "";
+
+      log("Успешный вход: ${user.username}");
+    } catch (e) {
+      log("Ошибка входа goAuth: $e");
+    }
   }
 }
