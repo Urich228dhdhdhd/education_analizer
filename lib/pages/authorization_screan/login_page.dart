@@ -1,7 +1,6 @@
 import 'package:education_analizer/design/dialog/styles.dart';
-import 'package:education_analizer/design/widgets/colors.dart'; // Ваш файл с цветами
+import 'package:education_analizer/design/widgets/colors.dart';
 import 'package:education_analizer/design/widgets/dimentions.dart';
-import 'package:education_analizer/design/widgets/images.dart';
 import 'package:education_analizer/pages/authorization_screan/login_form.dart';
 import 'package:flutter/material.dart';
 

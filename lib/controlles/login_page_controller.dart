@@ -10,5 +10,6 @@ class LoginPageController extends GetxController {
   void goAuth({required String login, required String password}) {
     log(login);
     log(password);
+    // authController
   }
 }
