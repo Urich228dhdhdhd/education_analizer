@@ -44,3 +44,9 @@ const TextStyle styleDrawer = TextStyle(
   fontFamily: "Rubik",
   color: primary3Color,
 );
+const TextStyle cardMainTextStyle = TextStyle(
+  fontSize: 60,
+  fontWeight: FontWeight.normal,
+  fontFamily: "Rubik",
+  color: primary3Color,
+);

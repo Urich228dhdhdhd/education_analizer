@@ -1,7 +1,6 @@
 import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:education_analizer/design/widgets/images.dart'; // Импортируйте ваш файл с иконками
 
 class CustomDrawer extends StatelessWidget {
@@ -11,13 +10,6 @@ class CustomDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Переменная стиля текста
-    TextStyle textStyle = const TextStyle(
-      fontSize: 16, // Размер шрифта
-      fontWeight: FontWeight.w600, // Жирный шрифт
-      color: Colors.black, // Цвет текста
-    );
-
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,

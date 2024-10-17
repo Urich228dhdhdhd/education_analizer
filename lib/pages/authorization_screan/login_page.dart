@@ -42,6 +42,7 @@ class LoginPage extends StatelessWidget {
                   ),
                 ],
               ),
+              const Spacer(),
               const SizedBox(height: 30), // Отступ между текстом и контейнером
               Container(
                 constraints: const BoxConstraints(

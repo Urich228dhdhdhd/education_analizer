@@ -37,7 +37,7 @@ void main() {
       GetPage(
           name: "/group",
           page: () => const GroupPage(),
-          binding: GroupBildings()),
+          binding: GroupBindings()),
       GetPage(
           name: "/subject",
           page: () => const SubjectPage(),

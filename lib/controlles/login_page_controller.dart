@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:education_analizer/bindings/main_bindings.dart';
 import 'package:education_analizer/controlles/auth_controller.dart';
 import 'package:education_analizer/model/user.dart';
 import 'package:education_analizer/pages/main_screan/main_page.dart';
@@ -16,12 +17,13 @@ class LoginPageController extends GetxController {
     log("Попытка входа с логином: $login и паролем: $password");
     const Duration(seconds: 3);
     try {
+      authController.logout();
       User user = await userRepository.loginUser(login, password);
       authController.role.value = user.role ?? '';
       authController.name.value = user.username ?? "";
-      Get.to(() => const MainPage());
-
-      log("Успешный вход: ${user.username}");
+      authController.id.value = user.id ?? 0;
+      log(user.id.toString());
+      Get.to(() => const MainPage(), binding: MainBindings());
     } catch (e) {
       log("Ошибка входа goAuth: $e");
     }
