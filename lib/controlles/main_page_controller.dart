@@ -8,7 +8,6 @@ class MainPageController extends GetxController {
   final GroupRepository groupRepository;
   final AuthController authController;
 
-  // Реактивный список для групп
   var groups = <Map<String, dynamic>>[].obs;
 
   MainPageController(this.groupRepository, {required this.authController});

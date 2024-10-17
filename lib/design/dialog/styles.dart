@@ -50,3 +50,15 @@ const TextStyle cardMainTextStyle = TextStyle(
   fontFamily: "Rubik",
   color: primary3Color,
 );
+const TextStyle dropdownButtonTextStyle = TextStyle(
+  fontSize: 14,
+  fontWeight: FontWeight.normal,
+  fontFamily: "Rubik",
+  color: Colors.white,
+);
+const TextStyle dialogMainTextStyle = TextStyle(
+  fontSize: 20,
+  fontWeight: FontWeight.normal,
+  fontFamily: "Rubik",
+  color: primary6Color,
+);

@@ -1,7 +1,12 @@
+import 'package:education_analizer/bindings/group_bildings.dart';
+import 'package:education_analizer/bindings/main_bindings.dart';
 import 'package:education_analizer/design/dialog/styles.dart';
+import 'package:education_analizer/pages/group_screan/group_page.dart';
+import 'package:education_analizer/pages/main_screan/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
-import 'package:education_analizer/design/widgets/images.dart'; // Импортируйте ваш файл с иконками
+import 'package:education_analizer/design/widgets/images.dart';
+import 'package:get/get.dart';
 
 class CustomDrawer extends StatelessWidget {
   final String role; // Параметр для передачи роли
@@ -31,7 +36,7 @@ class CustomDrawer extends StatelessWidget {
               style: styleDrawer,
             ),
             onTap: () {
-              Navigator.pop(context);
+              Get.to(() => const MainPage(), binding: MainBindings());
             },
           ),
           ListTile(
@@ -45,7 +50,7 @@ class CustomDrawer extends StatelessWidget {
               style: styleDrawer,
             ),
             onTap: () {
-              Navigator.pop(context);
+              Get.to(() => const GroupPage(), binding: GroupBindings());
             },
           ),
           ListTile(

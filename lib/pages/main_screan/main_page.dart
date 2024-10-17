@@ -11,7 +11,6 @@ class MainPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Инициализация контроллера
     MainPageController mainPageController = Get.find();
 
     return Scaffold(
@@ -20,32 +19,27 @@ class MainPage extends StatelessWidget {
       appBar: CustomAppBar(role: mainPageController.authController.role.value),
       drawer: CustomDrawer(role: mainPageController.authController.role.value),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0), // Отступы вокруг списка
-          child: SizedBox(
-            height: 200,
-            child: Obx(() {
-              // Используем Obx для обновления UI, когда изменяется список групп
-              return ListView.builder(
-                scrollDirection: Axis.horizontal, // Горизонтальный список
-                itemCount: mainPageController.groups.length, // Количество групп
-                itemBuilder: (context, index) {
-                  // Получаем данные о группе
-                  Map<String, dynamic> group = mainPageController.groups[index];
-                  String groupName = group['group_name'];
-                  int studentCount = group['student_count'];
+        child: SizedBox(
+          height: 200,
+          child: Obx(() {
+            return ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: mainPageController.groups.length,
+              itemBuilder: (context, index) {
+                Map<String, dynamic> group = mainPageController.groups[index];
+                String groupName = group['group_name'];
+                int studentCount = group['student_count'];
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: GroupCard(
-                      groupName: groupName,
-                      studentCount: studentCount,
-                    ),
-                  );
-                },
-              );
-            }),
-          ),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: GroupCard(
+                    groupName: groupName,
+                    studentCount: studentCount,
+                  ),
+                );
+              },
+            );
+          }),
         ),
       ),
     );
@@ -77,8 +71,7 @@ class GroupCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment:
-                CrossAxisAlignment.center, // Центрирование по горизонтали
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 groupName,
