@@ -21,4 +21,9 @@ class ListOfSubject {
     data['semester_number'] = semesterNumber;
     return data;
   }
+
+  @override
+  String toString() {
+    return 'ListOfSubject(id: $id, subjectId: $subjectId, groupId: $groupId, semesterNumber: $semesterNumber)';
+  }
 }
