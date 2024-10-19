@@ -15,7 +15,6 @@ class GroupPage extends StatelessWidget {
     GroupPageController groupPageController = Get.find();
 
     String selectedFilter = 'По номеру';
-
     List<String> filterOptions = [
       'По номеру',
       'По названию',
@@ -24,20 +23,17 @@ class GroupPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: primaryColor,
-      resizeToAvoidBottomInset: false,
       appBar: CustomAppBar(role: groupPageController.authController.role.value),
       drawer: CustomDrawer(role: groupPageController.authController.role.value),
       body: SafeArea(
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(
-                  left: 16.0, top: 16, right: 16, bottom: 10),
+              padding: const EdgeInsets.all(16.0),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  dropContainer(selectedFilter, filterOptions),
+                  _dropContainer(selectedFilter, filterOptions),
                   FloatingActionButton(
                     onPressed: () {
                       showDialog(
@@ -57,20 +53,16 @@ class GroupPage extends StatelessWidget {
                 width: 300,
                 child: Obx(() {
                   return ListView.builder(
-                    scrollDirection: Axis.vertical,
                     itemCount: groupPageController.groups.length,
                     itemBuilder: (context, index) {
                       Map<String, dynamic> group =
                           groupPageController.groups[index];
-                      String groupName = group['group_name'];
-                      int studentCount = group['student_count'];
-
                       return Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10), // Отступы сверху и снизу
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                         child: GroupCard(
-                          groupName: groupName,
-                          studentCount: studentCount,
+                          groupId: group['id'],
+                          groupName: group['group_name'],
+                          studentCount: group['student_count'],
                         ),
                       );
                     },
@@ -84,9 +76,9 @@ class GroupPage extends StatelessWidget {
     );
   }
 
-  Container dropContainer(String selectedFilter, List<String> filterOptions) {
+  Container _dropContainer(String selectedFilter, List<String> filterOptions) {
     return Container(
-      width: 180, // Устанавливаем фиксированную ширину
+      width: 180,
       decoration: BoxDecoration(
         color: primary6Color,
         borderRadius: BorderRadius.circular(8),
@@ -94,14 +86,11 @@ class GroupPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: DropdownButton<String>(
         value: selectedFilter,
-        isExpanded: true, // Занимает доступное пространство
+        isExpanded: true,
         icon: const Icon(Icons.arrow_downward, color: Colors.white),
-        iconSize: 24,
-        elevation: 16,
         style: dropdownButtonTextStyle,
-        borderRadius: BorderRadius.circular(7),
-        dropdownColor: primary6Color, // Цвет фона выпадающего списка
-        underline: Container(), // Убираем подчеркивание
+        dropdownColor: primary6Color,
+        underline: Container(),
         items: filterOptions.map((String value) {
           return DropdownMenuItem<String>(
             value: value,
@@ -110,8 +99,7 @@ class GroupPage extends StatelessWidget {
         }).toList(),
         onChanged: (newValue) {
           selectedFilter = newValue!;
-          // Пример применения фильтрации
-          // groupPageController.applyFilter(selectedFilter);
+          // Можно добавить логику фильтрации здесь
         },
       ),
     );
@@ -121,11 +109,13 @@ class GroupPage extends StatelessWidget {
 class GroupCard extends StatelessWidget {
   final String groupName;
   final int studentCount;
+  final int groupId;
 
   const GroupCard({
     super.key,
     required this.groupName,
     required this.studentCount,
+    required this.groupId,
   });
 
   @override
@@ -138,28 +128,51 @@ class GroupCard extends StatelessWidget {
       elevation: 4,
       child: SizedBox(
         width: 300,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                groupName,
-                style: cardMainTextStyle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      groupName,
+                      style: cardMainTextStyle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Количество учащихся: $studentCount",
+                      style: styleDrawer,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 10),
-              Text(
-                "Количество учащихся: $studentCount",
-                style: styleDrawer,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            ),
+            Positioned(
+              right: 0,
+              top: 0,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                icon: const Icon(Icons.more_vert, size: 20),
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return GroupDialog(
+                          groupId: groupId,
+                          initialGroupName: groupName,
+                        );
+                      });
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
