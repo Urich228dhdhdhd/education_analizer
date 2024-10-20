@@ -18,4 +18,9 @@ class Subject {
     data['subject_name_long'] = subjectNameLong;
     return data;
   }
+
+  @override
+  String toString() {
+    return 'Subject{id: $id, shortName: $subjectNameShort, longName: $subjectNameLong}';
+  }
 }

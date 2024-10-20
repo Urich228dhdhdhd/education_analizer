@@ -1,6 +1,7 @@
 import 'package:education_analizer/controlles/auth_controller.dart';
 import 'package:education_analizer/controlles/group_dialog_page_controller.dart';
 import 'package:education_analizer/controlles/group_page_controller.dart';
+import 'package:education_analizer/controlles/semester_selection_controller.dart';
 import 'package:education_analizer/repository/group_repository.dart';
 import 'package:education_analizer/repository/listofsubject_repository.dart';
 import 'package:education_analizer/repository/subject_repository.dart';
@@ -13,6 +14,8 @@ class GroupBindings implements Bindings {
     Get.lazyPut<GroupRepository>(() => GroupRepository());
     Get.lazyPut<SubjectRepository>(() => SubjectRepository());
     Get.lazyPut<ListofsubjectRepository>(() => ListofsubjectRepository());
+    Get.lazyPut<SemesterSelectionController>(
+        () => SemesterSelectionController());
     Get.lazyPut<GroupPageController>(
       () => GroupPageController(
         Get.find<GroupRepository>(),
@@ -22,6 +25,7 @@ class GroupBindings implements Bindings {
 
     Get.lazyPut<GroupDialogPageController>(() => GroupDialogPageController(
         Get.find<GroupPageController>(),
+        semesterSelectionController: Get.find<SemesterSelectionController>(),
         listofsubjectRepository: Get.find<ListofsubjectRepository>(),
         subjectRepository: Get.find<SubjectRepository>(),
         groupRepository: Get.find<GroupRepository>()));

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:education_analizer/model/list_of_subject.dart';
 import 'package:get/get.dart';
 
 class ListofsubjectRepository extends GetxService {
@@ -22,6 +23,22 @@ class ListofsubjectRepository extends GetxService {
       return response.data;
     } catch (e) {
       throw Exception('Ошибка при получении списка предметов по grooup_id: $e');
+    }
+  }
+
+  Future<List<ListOfSubject>> getListOfSubjectsBySubjectGroupId(
+      int groupId, int subjectId) async {
+    try {
+      final response = await dio.get("$url/group/$groupId/subject/$subjectId");
+
+      // Преобразуем данные в List<ListOfSubject>
+      List<dynamic> data =
+          response.data; // Получаем данные в виде List<dynamic>
+      return data
+          .map((item) => ListOfSubject.fromJson(item))
+          .toList(); // Преобразуем в List<ListOfSubject>
+    } catch (e) {
+      throw Exception('Ошибка при получении списка предметов по group_id: $e');
     }
   }
 

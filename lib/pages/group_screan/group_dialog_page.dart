@@ -1,13 +1,13 @@
 import 'package:education_analizer/controlles/group_dialog_page_controller.dart';
 import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
-import 'package:education_analizer/model/subject.dart';
+import 'package:education_analizer/pages/group_screan/semester_dialog_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class GroupDialog extends StatelessWidget {
-  final int? groupId; // ID группы для редактирования
-  final String? initialGroupName; // Начальное имя группы для редактирования
+  final int? groupId;
+  final String? initialGroupName;
 
   const GroupDialog({
     super.key,
@@ -17,25 +17,27 @@ class GroupDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Получаем контроллер
     final GroupDialogPageController dialogController = Get.find();
-    dialogController.fetchAllSubjects();
 
-    // dialogController.fetchAllSubjects();
-    if (groupId != null) {
-      dialogController.fetchAllListOfSubjectByGroupId(groupId!);
-    }
-
-    // Контроллеры
     final TextEditingController groupNameController =
         TextEditingController(text: initialGroupName ?? "");
     final TextEditingController searchController = TextEditingController();
 
-    // Запрашиваем все предметы
-    dialogController.fetchAllSubjects();
-    if (groupId != null) {
-      dialogController.fetchAllListOfSubjectByGroupId(groupId!);
-    }
+    // Загружаем данные после первого кадра
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Начинаем загрузку
+      dialogController.isLoading.value = true;
+
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Загружаем данные
+      await dialogController.fetchAllSubjects();
+      if (groupId != null) {
+        await dialogController.fetchAllListOfSubjectByGroupId(groupId!);
+      }
+
+      dialogController.isLoading.value = false; // Завершаем загрузку
+    });
 
     // Слушаем изменения в поле поиска
     searchController.addListener(() {
@@ -58,96 +60,15 @@ class GroupDialog extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    groupId == null
-                        ? 'Создать новую группу'
-                        : 'Редактировать группу',
-                    style: dialogMainTextStyle,
-                  ),
+                  _buildDialogTitle(),
                   const SizedBox(height: 10),
-                  TextField(
-                    decoration: inputField("Название группы"),
-                    controller: groupNameController,
-                  ),
+                  _buildGroupNameField(groupNameController),
                   const SizedBox(height: 20),
-                  TextField(
-                    decoration:
-                        inputFieldWithIcon("Поиск предмета", Icons.search),
-                    controller: searchController,
-                  ),
+                  _buildSearchField(searchController),
                   const SizedBox(height: 20),
-                  // Список предметов
-                  Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Obx(() {
-                      return ListView.builder(
-                        itemCount: dialogController.filteredSubjects.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    dialogController.filteredSubjects[index]
-                                            .subjectNameShort ??
-                                        '',
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[300],
-                                      borderRadius: BorderRadius.circular(15),
-                                    ),
-                                    child: const TextField(
-                                      decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText: 'Описание',
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      );
-                    }),
-                  ),
+                  _buildSubjectList(dialogController),
                   const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: elevationButtonStyle(),
-                      onPressed: () {
-                        if (groupId == null) {
-                          dialogController.createNewGroup(
-                            groupName: groupNameController.text.trim(),
-                          );
-                        } else {
-                          dialogController.editGroup(
-                            id: groupId!,
-                            groupName: groupNameController.text.trim(),
-                          );
-                        }
-                        Get.back(); // Закрыть диалог после выполнения действия
-                      },
-                      child: const Text(
-                        'Сохранить',
-                        style: dropdownButtonTextStyle,
-                      ),
-                    ),
-                  ),
+                  _buildSaveButton(dialogController, groupNameController),
                 ],
               ),
             ),
@@ -157,7 +78,190 @@ class GroupDialog extends StatelessWidget {
     );
   }
 
-  ButtonStyle elevationButtonStyle() {
+  // Метод для построения заголовка диалогового окна
+  Widget _buildDialogTitle() {
+    return Text(
+      groupId == null ? 'Создать новую группу' : 'Редактировать группу',
+      style: dialogMainTextStyle,
+    );
+  }
+
+  // Метод для построения поля ввода имени группы
+  Widget _buildGroupNameField(TextEditingController controller) {
+    return TextField(
+      decoration: _inputField("Название группы"),
+      controller: controller,
+    );
+  }
+
+  // Метод для построения поля поиска предметов
+  Widget _buildSearchField(TextEditingController controller) {
+    return TextField(
+      decoration: _inputFieldWithIcon("Поиск предмета", Icons.search),
+      controller: controller,
+    );
+  }
+
+  // Метод для построения списка предметов
+  // Метод для построения списка предметов
+  Widget _buildSubjectList(GroupDialogPageController dialogController) {
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Obx(() {
+        // Проверка состояния загрузки
+        if (dialogController.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (groupId == null) {
+          // Если groupId равен null, показываем сообщение
+          return const Center(
+            child: Text(
+              'Необходимо создать группу для редактирования предметов',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          );
+        } else {
+          return ListView.builder(
+            itemCount: dialogController.filteredSubjects.length,
+            itemBuilder: (context, index) {
+              return _buildSubjectItem(dialogController, index, context);
+            },
+          );
+        }
+      }),
+    );
+  }
+
+// Метод для построения элемента списка предметов
+  // Метод для построения элемента списка предметов
+  Widget _buildSubjectItem(GroupDialogPageController dialogController,
+      int index, BuildContext context) {
+    final subject = dialogController.filteredSubjects[index];
+    String semesterNumbers = '';
+
+    if (groupId != null) {
+      // Ищем все объекты ListOfSubject с соответствующим subjectId
+      final matchingSubjects = dialogController.listOfSubjects
+          .where((listSubj) => listSubj.subjectId == subject.id)
+          .toList();
+
+      // Формируем строку с номерами семестров
+      List<int> semestersForSubject = matchingSubjects
+          .map((listSubj) => listSubj.semesterNumber)
+          .where((semester) => semester != null)
+          .map((semester) => semester!)
+          .toList();
+
+      semesterNumbers = semestersForSubject.join(', ');
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 5, right: 5),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                height: 47, // Высота для контейнера
+                decoration: BoxDecoration(
+                  color: primary8Color,
+                  borderRadius: BorderRadius.circular(15), // Закругленные углы
+                ),
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  subject.subjectNameShort ?? '',
+                  textAlign: TextAlign.left, // Текст выровнен по левому краю
+                  style: const TextStyle(
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: GestureDetector(
+                onTap: () async {
+                  // Открываем новое диалоговое окно для выбора семестров
+                  List<int> selectedSemesters = await SemesterDialogPage.show(
+                    context,
+                    semesterNumbers.split(', ').map(int.parse).toList(),
+                    groupId!,
+                    subject.id!,
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: primary8Color, // Цвет фона
+                    borderRadius:
+                        BorderRadius.circular(15), // Закругленные углы
+                  ),
+                  child: TextField(
+                    controller: TextEditingController(
+                      text: semesterNumbers.isNotEmpty ? semesterNumbers : '',
+                    ),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Описание',
+                    ),
+                    readOnly: true, // Поле только для чтения
+                    onTap: () async {
+                      // Открываем диалог при нажатии на текстовое поле
+                      List<int> selectedSemesters =
+                          await SemesterDialogPage.show(
+                        context,
+                        semesterNumbers.split(', ').map(int.parse).toList(),
+                        groupId!,
+                        subject.id!,
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Метод для построения кнопки сохранения
+  Widget _buildSaveButton(GroupDialogPageController dialogController,
+      TextEditingController groupNameController) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: _elevationButtonStyle(),
+        onPressed: () {
+          if (groupId == null) {
+            dialogController.createNewGroup(
+              groupName: groupNameController.text.trim(),
+            );
+          } else {
+            dialogController.editGroup(
+              id: groupId!,
+              groupName: groupNameController.text.trim(),
+            );
+          }
+          Get.back(); // Закрыть диалог после сохранения
+        },
+        child: const Text(
+          'Сохранить',
+          style: dropdownButtonTextStyle,
+        ),
+      ),
+    );
+  }
+
+  // Стиль для кнопки
+  ButtonStyle _elevationButtonStyle() {
     return ButtonStyle(
       backgroundColor: WidgetStateProperty.all<Color>(
         const Color(0xFF1D427A),
@@ -170,7 +274,8 @@ class GroupDialog extends StatelessWidget {
     );
   }
 
-  InputDecoration inputField(String labelText) {
+  // Поле ввода без иконки
+  InputDecoration _inputField(String labelText) {
     return InputDecoration(
       labelText: labelText,
       labelStyle: styleDrawer,
@@ -182,7 +287,8 @@ class GroupDialog extends StatelessWidget {
     );
   }
 
-  InputDecoration inputFieldWithIcon(String labelText, IconData icon) {
+  // Поле ввода с иконкой
+  InputDecoration _inputFieldWithIcon(String labelText, IconData icon) {
     return InputDecoration(
       labelText: labelText,
       labelStyle: styleDrawer,

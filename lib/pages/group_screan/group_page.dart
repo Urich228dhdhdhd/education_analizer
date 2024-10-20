@@ -39,7 +39,7 @@ class GroupPage extends StatelessWidget {
                       showDialog(
                           context: context,
                           builder: (BuildContext context) {
-                            return GroupDialog();
+                            return const GroupDialog();
                           });
                     },
                     backgroundColor: primary6Color,
@@ -127,6 +127,7 @@ class GroupCard extends StatelessWidget {
       ),
       elevation: 4,
       child: SizedBox(
+        height: 200,
         width: 300,
         child: Stack(
           children: [
@@ -135,7 +136,8 @@ class GroupCard extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
                   children: [
                     Text(
                       groupName,

@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:education_analizer/controlles/group_page_controller.dart';
+import 'package:education_analizer/controlles/semester_selection_controller.dart';
 import 'package:education_analizer/model/list_of_subject.dart';
 import 'package:education_analizer/model/subject.dart';
 import 'package:education_analizer/repository/group_repository.dart';
@@ -13,13 +14,156 @@ class GroupDialogPageController extends GetxController {
   final GroupPageController groupPageController;
   final SubjectRepository subjectRepository;
   final ListofsubjectRepository listofsubjectRepository;
+  final SemesterSelectionController semesterSelectionController;
 
-  bool isEditing = false; // Флаг редактирования
-  int? groupId; // ID группы, если редактируем
-  RxList<Subject> subjects = <Subject>[].obs;
+  // Переменные для работы с данными
+  var subjects = <Subject>[].obs; // Список всех предметов
   var filteredSubjects = <Subject>[].obs; // Отфильтрованный список предметов
-  var listOfSubjects = <ListOfSubject>[].obs; // Список семестров
-  // Метод для фильтрации предметов по имени
+  var listOfSubjects = <ListOfSubject>[].obs; // Список листов предметов
+  var isLoading = false.obs; // Флаг для состояния загрузки данных
+  var subjectsByGroupAndSubject = <ListOfSubject>[]
+      .obs; // Новая переменная для хранения предметов по группе и предмету
+
+  bool isEditing = false; // Флаг режима редактирования
+  int? groupId; // ID редактируемой группы
+
+  // Конструктор
+  GroupDialogPageController(
+    this.groupPageController, {
+    required this.semesterSelectionController,
+    required this.listofsubjectRepository,
+    required this.subjectRepository,
+    required this.groupRepository,
+  });
+
+  // Инициализация контроллера
+  @override
+  void onInit() {
+    super.onInit();
+    fetchAllSubjects(); // Загружаем предметы при инициализации
+  }
+
+  // Метод для создания новой группы
+  Future<void> createNewGroup({
+    required String groupName,
+    int? curatorId,
+  }) async {
+    try {
+      final newGroup = await groupRepository.createGroup(
+        groupName: groupName,
+        curatorId: curatorId,
+      );
+
+      // Обновляем список групп в основном контроллере
+      groupPageController.findGroupsByRole();
+
+      // Уведомление об успехе
+      Get.snackbar(
+        'Успех',
+        'Группа успешно создана: ${newGroup['group_name']}',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+
+      resetEditingParameters(); // Сброс параметров редактирования
+    } catch (e) {
+      // Уведомление об ошибке
+      Get.snackbar(
+        'Ошибка',
+        'Не удалось создать группу: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+    }
+  }
+
+  // Метод для редактирования группы
+  Future<void> editGroup({
+    required int id,
+    required String groupName,
+    int? curatorId,
+  }) async {
+    try {
+      final updatedGroup = await groupRepository.updateGroup(
+        id: id,
+        groupName: groupName,
+        curatorId: curatorId,
+      );
+
+      // Обновляем список групп в основном контроллере
+      groupPageController.findGroupsByRole();
+
+      // Уведомление об успехе
+      Get.snackbar(
+        'Успех',
+        'Группа успешно обновлена: ${updatedGroup['group_name']}',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+
+      resetEditingParameters(); // Сброс параметров редактирования
+    } catch (e) {
+      // Уведомление об ошибке
+      Get.snackbar(
+        'Ошибка',
+        'Не удалось обновить группу: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+    }
+  }
+
+  // Метод для сохранения группы (новой или редактируемой)
+  Future<void> saveGroup({
+    required String groupName,
+    int? id,
+    int? curatorId,
+  }) async {
+    if (isEditing && id != null) {
+      await editGroup(id: id, groupName: groupName, curatorId: curatorId);
+    } else {
+      await createNewGroup(groupName: groupName, curatorId: curatorId);
+    }
+  }
+
+  // Устанавливаем параметры для редактирования группы
+  void setEditingParameters(int id,
+      {required String groupName, int? curatorId}) {
+    groupId = id;
+    isEditing = true;
+  }
+
+  // Сбрасываем параметры редактирования
+  void resetEditingParameters() {
+    groupId = null;
+    isEditing = false;
+  }
+
+  Future<void> fetchAllSubjects() async {
+    try {
+      isLoading(true);
+      final response = await subjectRepository.getSubjects();
+
+      List<Subject> fetchedSubjects = response
+          .map<Subject>((subject) => Subject.fromJson(subject))
+          .toList();
+
+      subjects.assignAll(fetchedSubjects);
+      log(subjects.toString());
+      filteredSubjects.assignAll(fetchedSubjects);
+    } catch (e) {
+      Get.snackbar(
+        'Ошибка',
+        'Не удалось получить предметы: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+    } finally {
+      isLoading(false); // Выключаем индикатор загрузки
+    }
+  }
+
+  // Фильтрация предметов по запросу
   void filterSubjects(String query) {
     filteredSubjects.assignAll(
       subjects.where((subject) {
@@ -31,133 +175,48 @@ class GroupDialogPageController extends GetxController {
     );
   }
 
-  GroupDialogPageController(
-    this.groupPageController, {
-    required this.listofsubjectRepository,
-    required this.subjectRepository,
-    required this.groupRepository,
-  });
-
-  Future<void> createNewGroup(
-      {required String groupName, int? curatorId}) async {
+  // Получение списка  по ID группы
+  Future<List<ListOfSubject>> fetchAllListOfSubjectByGroupId(
+      int groupId) async {
+    listOfSubjects.clear();
+    isLoading.value = true;
     try {
-      final newGroup = await groupRepository.createGroup(
-        groupName: groupName,
-        curatorId: curatorId,
-      );
+      final response =
+          await listofsubjectRepository.getListOfSubjectsByGroupId(groupId);
 
-      groupPageController.findGroupsByRole();
-
-      Get.snackbar(
-        'Успех',
-        'Группа успешно создана: ${newGroup['group_name']}',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-      );
-
-      resetEditingParameters(); // Сбрасываем параметры редактирования
-    } catch (e) {
-      Get.snackbar(
-        'Ошибка',
-        'Не удалось создать группу: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-      );
-    }
-  }
-
-  Future<void> editGroup(
-      {required int id, required String groupName, int? curatorId}) async {
-    try {
-      final updatedGroup = await groupRepository.updateGroup(
-        id: id, // Используем параметр id напрямую
-        groupName: groupName,
-        curatorId: curatorId, // Если нужно, раскомментируйте эту строку
-      );
-
-      // Обновляем список групп
-      groupPageController.findGroupsByRole();
-
-      Get.snackbar(
-        'Успех',
-        'Группа успешно обновлена: ${updatedGroup['group_name']}',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-      );
-
-      resetEditingParameters(); // Сбрасываем параметры редактирования
-    } catch (e) {
-      // Обработка ошибок
-      Get.snackbar(
-        'Ошибка',
-        'Не удалось обновить группу: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-      );
-    }
-  }
-
-  Future<void> saveGroup(
-      {required String groupName, int? id, int? curatorId}) async {
-    if (isEditing && id != null) {
-      // Проверяем, что id не null
-      await editGroup(id: id, groupName: groupName, curatorId: curatorId);
-    } else {
-      await createNewGroup(groupName: groupName, curatorId: curatorId);
-    }
-  }
-
-  void setEditingParameters(int id,
-      {required String groupName, int? curatorId}) {
-    groupId = id; // Устанавливаем ID группы
-    isEditing = true; // Устанавливаем флаг редактирования
-    // Здесь можно сохранить название группы и ID куратора, если необходимо
-  }
-
-  void resetEditingParameters() {
-    groupId = null;
-    isEditing = false;
-  }
-
-  Future<void> fetchAllSubjects() async {
-    try {
-      final response = await subjectRepository.getSubjects();
-
-      List<Subject> fetchedSubjects = response
-          .map<Subject>((subject) => Subject.fromJson(subject))
+      List<ListOfSubject> fetchedListOfSubject = response
+          .map<ListOfSubject>(
+              (listofsubj) => ListOfSubject.fromJson(listofsubj))
           .toList();
-
-      // Обновляем список предметов в контроллере
-      subjects.assignAll(fetchedSubjects);
+      log(fetchedListOfSubject.toString());
+      listOfSubjects.assignAll(fetchedListOfSubject);
+      isLoading.value = false;
+      return fetchedListOfSubject;
     } catch (e) {
+      return [];
+    }
+  }
+
+  // Новый метод для получения списка предметов по ID группы и предмета
+  Future<void> fetchListOfSubjectsByGroupAndSubjectId(
+      int groupId, int subjectId) async {
+    subjectsByGroupAndSubject.clear(); // Очистка предыдущих данных
+
+    try {
+      final response = await listofsubjectRepository
+          .getListOfSubjectsBySubjectGroupId(groupId, subjectId);
+
+      subjectsByGroupAndSubject
+          .assignAll(response); // Сохраняем в новую переменную
+      log('Полученные предметы по группе $groupId и предмету $subjectId: $subjectsByGroupAndSubject');
+    } catch (e) {
+      log(e.toString());
       Get.snackbar(
         'Ошибка',
         'Не удалось получить предметы: ${e.toString()}',
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 2),
       );
-    }
-  }
-
-  Future<List<ListOfSubject>> fetchAllListOfSubjectByGroupId(
-      int groupId) async {
-    try {
-      final response =
-          await listofsubjectRepository.getListOfSubjectsByGroupId(groupId);
-      List<ListOfSubject> fetchedListOfSubject = response
-          .map<ListOfSubject>(
-              (listofsubj) => ListOfSubject.fromJson(listofsubj))
-          .toList();
-      log(fetchedListOfSubject.toString());
-      return fetchedListOfSubject;
-    } catch (e) {
-      // Get.snackbar(
-      //   'Ошибка',
-      //   'Не удалось получить список предметов для группы: ${e.toString()}',
-      //   snackPosition: SnackPosition.BOTTOM,
-      //   duration: const Duration(seconds: 2),
-      // );
-      return [];
     }
   }
 }
