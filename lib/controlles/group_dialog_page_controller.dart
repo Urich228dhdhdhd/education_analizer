@@ -149,7 +149,7 @@ class GroupDialogPageController extends GetxController {
           .toList();
 
       subjects.assignAll(fetchedSubjects);
-      log(subjects.toString());
+      // log(subjects.toString());
       filteredSubjects.assignAll(fetchedSubjects);
     } catch (e) {
       Get.snackbar(
@@ -188,7 +188,7 @@ class GroupDialogPageController extends GetxController {
           .map<ListOfSubject>(
               (listofsubj) => ListOfSubject.fromJson(listofsubj))
           .toList();
-      log(fetchedListOfSubject.toString());
+      // log(fetchedListOfSubject.toString());
       listOfSubjects.assignAll(fetchedListOfSubject);
       isLoading.value = false;
       return fetchedListOfSubject;
@@ -208,9 +208,9 @@ class GroupDialogPageController extends GetxController {
 
       subjectsByGroupAndSubject
           .assignAll(response); // Сохраняем в новую переменную
-      log('Полученные предметы по группе $groupId и предмету $subjectId: $subjectsByGroupAndSubject');
+      // log('Полученные предметы по группе $groupId и предмету $subjectId: $subjectsByGroupAndSubject');
     } catch (e) {
-      log(e.toString());
+      // log(e.toString());
       Get.snackbar(
         'Ошибка',
         'Не удалось получить предметы: ${e.toString()}',

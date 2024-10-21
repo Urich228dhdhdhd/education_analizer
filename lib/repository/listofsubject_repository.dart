@@ -74,11 +74,41 @@ class ListofsubjectRepository extends GetxService {
   }
 
   // Удаление предмета по ID
-  Future<void> deleteListOfSubject(int id) async {
+  Future<void> delete1ListOfSubject(int id) async {
     try {
       await dio.delete('$url/$id');
     } catch (e) {
       throw Exception('Ошибка при удалении предмета: $e');
+    }
+  }
+
+  // Проверка существования предмета
+  Future<bool> checkListOfSubjectExists(
+      int subjectId, int groupId, int semesterNumber) async {
+    try {
+      final response = await dio.post("$url/isexist", data: {
+        "subject_id": subjectId,
+        "group_id": groupId,
+        "semester_number": semesterNumber,
+      });
+      return response.statusCode == 200; // Если статус 200, запись существует
+    } catch (e) {
+      throw Exception('Ошибка при проверке существования предмета: $e');
+    }
+  }
+
+  Future<void> deleteListOfSubjectbyAllParams(
+      int subjectId, int groupId, int semesterNumber) async {
+    try {
+      await dio.delete(
+          "$url/group/$groupId/subject/$subjectId/semester_number/$semesterNumber",
+          data: {
+            "group_id": groupId,
+            "subject_id": subjectId,
+            "semester_number": semesterNumber,
+          });
+    } catch (e) {
+      throw Exception('Ошибка при удалении семестра: $e');
     }
   }
 }

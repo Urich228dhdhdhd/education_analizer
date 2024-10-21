@@ -14,8 +14,6 @@ class GroupBindings implements Bindings {
     Get.lazyPut<GroupRepository>(() => GroupRepository());
     Get.lazyPut<SubjectRepository>(() => SubjectRepository());
     Get.lazyPut<ListofsubjectRepository>(() => ListofsubjectRepository());
-    Get.lazyPut<SemesterSelectionController>(
-        () => SemesterSelectionController());
     Get.lazyPut<GroupPageController>(
       () => GroupPageController(
         Get.find<GroupRepository>(),
@@ -29,5 +27,7 @@ class GroupBindings implements Bindings {
         listofsubjectRepository: Get.find<ListofsubjectRepository>(),
         subjectRepository: Get.find<SubjectRepository>(),
         groupRepository: Get.find<GroupRepository>()));
+    Get.lazyPut<SemesterSelectionController>(() => SemesterSelectionController(
+        listOfSubjectRepository: Get.find<ListofsubjectRepository>()));
   }
 }

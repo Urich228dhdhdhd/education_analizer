@@ -1,7 +1,11 @@
+import 'dart:developer';
+
 import 'package:education_analizer/controlles/group_dialog_page_controller.dart';
 import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
+import 'package:education_analizer/model/list_of_subject.dart';
 import 'package:education_analizer/pages/group_screan/semester_dialog_page.dart';
+import 'package:education_analizer/repository/listofsubject_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -18,6 +22,7 @@ class GroupDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final GroupDialogPageController dialogController = Get.find();
+    final ListofsubjectRepository listofsubjectRepository = Get.find();
 
     final TextEditingController groupNameController =
         TextEditingController(text: initialGroupName ?? "");
@@ -49,28 +54,26 @@ class GroupDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       backgroundColor: primary2Color,
-      child: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 400,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildDialogTitle(),
-                  const SizedBox(height: 10),
-                  _buildGroupNameField(groupNameController),
-                  const SizedBox(height: 20),
-                  _buildSearchField(searchController),
-                  const SizedBox(height: 20),
-                  _buildSubjectList(dialogController),
-                  const SizedBox(height: 20),
-                  _buildSaveButton(dialogController, groupNameController),
-                ],
-              ),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: 400,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildDialogTitle(),
+                const SizedBox(height: 10),
+                _buildGroupNameField(groupNameController),
+                const SizedBox(height: 20),
+                _buildSearchField(searchController),
+                const SizedBox(height: 20),
+                _buildSubjectList(dialogController, listofsubjectRepository),
+                const SizedBox(height: 20),
+                _buildSaveButton(dialogController, groupNameController),
+              ],
             ),
           ),
         ),
@@ -91,6 +94,7 @@ class GroupDialog extends StatelessWidget {
     return TextField(
       decoration: _inputField("Название группы"),
       controller: controller,
+      style: inputDialogSemesters,
     );
   }
 
@@ -99,12 +103,14 @@ class GroupDialog extends StatelessWidget {
     return TextField(
       decoration: _inputFieldWithIcon("Поиск предмета", Icons.search),
       controller: controller,
+      style: inputDialogSemesters,
     );
   }
 
   // Метод для построения списка предметов
   // Метод для построения списка предметов
-  Widget _buildSubjectList(GroupDialogPageController dialogController) {
+  Widget _buildSubjectList(GroupDialogPageController dialogController,
+      ListofsubjectRepository listOfSubjectRepository) {
     return Container(
       height: 200,
       decoration: BoxDecoration(
@@ -128,7 +134,8 @@ class GroupDialog extends StatelessWidget {
           return ListView.builder(
             itemCount: dialogController.filteredSubjects.length,
             itemBuilder: (context, index) {
-              return _buildSubjectItem(dialogController, index, context);
+              return _buildSubjectItem(
+                  dialogController, listOfSubjectRepository, index, context);
             },
           );
         }
@@ -138,8 +145,11 @@ class GroupDialog extends StatelessWidget {
 
 // Метод для построения элемента списка предметов
   // Метод для построения элемента списка предметов
-  Widget _buildSubjectItem(GroupDialogPageController dialogController,
-      int index, BuildContext context) {
+  Widget _buildSubjectItem(
+      GroupDialogPageController dialogController,
+      ListofsubjectRepository listOfSubjectRepository,
+      int index,
+      BuildContext context) {
     final subject = dialogController.filteredSubjects[index];
     String semesterNumbers = '';
 
@@ -178,9 +188,7 @@ class GroupDialog extends StatelessWidget {
                 child: Text(
                   subject.subjectNameShort ?? '',
                   textAlign: TextAlign.left, // Текст выровнен по левому краю
-                  style: const TextStyle(
-                    fontSize: 16,
-                  ),
+                  style: subjectDialogSemesters,
                 ),
               ),
             ),
@@ -188,10 +196,15 @@ class GroupDialog extends StatelessWidget {
             Expanded(
               child: GestureDetector(
                 onTap: () async {
-                  // Открываем новое диалоговое окно для выбора семестров
+                  List<ListOfSubject> listOfSubjects =
+                      await listOfSubjectRepository
+                          .getListOfSubjectsBySubjectGroupId(
+                              groupId!, subject.id!);
+
+                  // Вызываем диалоговое окно с полученным списком предметов
                   List<int> selectedSemesters = await SemesterDialogPage.show(
                     context,
-                    semesterNumbers.split(', ').map(int.parse).toList(),
+                    listOfSubjects, // Передаем полученный список предметов
                     groupId!,
                     subject.id!,
                   );
@@ -204,6 +217,8 @@ class GroupDialog extends StatelessWidget {
                         BorderRadius.circular(15), // Закругленные углы
                   ),
                   child: TextField(
+                    style: semestersDialogSemesters,
+
                     controller: TextEditingController(
                       text: semesterNumbers.isNotEmpty ? semesterNumbers : '',
                     ),
@@ -213,14 +228,21 @@ class GroupDialog extends StatelessWidget {
                     ),
                     readOnly: true, // Поле только для чтения
                     onTap: () async {
-                      // Открываем диалог при нажатии на текстовое поле
+                      List<ListOfSubject> listOfSubjects =
+                          await listOfSubjectRepository
+                              .getListOfSubjectsBySubjectGroupId(
+                                  groupId!, subject.id!);
+
+                      // Вызываем диалоговое окно с полученным списком предметов
                       List<int> selectedSemesters =
                           await SemesterDialogPage.show(
                         context,
-                        semesterNumbers.split(', ').map(int.parse).toList(),
+                        listOfSubjects, // Передаем полученный список предметов
                         groupId!,
                         subject.id!,
                       );
+                      await dialogController
+                          .fetchAllListOfSubjectByGroupId(groupId!);
                     },
                   ),
                 ),

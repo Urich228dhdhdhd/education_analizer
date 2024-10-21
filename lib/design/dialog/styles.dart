@@ -62,3 +62,27 @@ const TextStyle dialogMainTextStyle = TextStyle(
   fontFamily: "Rubik",
   color: primary6Color,
 );
+const TextStyle dialogSemestrTextStyle = TextStyle(
+  fontSize: 18,
+  fontWeight: FontWeight.w400,
+  fontFamily: "Rubik",
+  color: primary6Color,
+);
+const TextStyle inputDialogSemesters = TextStyle(
+  fontSize: 16,
+  fontWeight: FontWeight.w500,
+  fontFamily: "Rubik",
+  color: primary6Color,
+);
+const TextStyle subjectDialogSemesters = TextStyle(
+  fontSize: 16,
+  fontWeight: FontWeight.w500,
+  fontFamily: "Rubik",
+  color: primary6Color,
+);
+const TextStyle semestersDialogSemesters = TextStyle(
+  fontSize: 16,
+  fontWeight: FontWeight.w500,
+  fontFamily: "Rubik",
+  color: primary6Color,
+);
