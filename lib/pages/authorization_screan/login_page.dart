@@ -11,8 +11,7 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: primaryColor,
-      resizeToAvoidBottomInset:
-          false, // Отключаем автоматическое изменение размера
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Center(
           child: Column(

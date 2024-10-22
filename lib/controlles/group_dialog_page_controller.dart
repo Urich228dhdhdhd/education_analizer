@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:education_analizer/controlles/group_page_controller.dart';
 import 'package:education_analizer/controlles/semester_selection_controller.dart';
 import 'package:education_analizer/model/list_of_subject.dart';

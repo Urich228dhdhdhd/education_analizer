@@ -74,6 +74,7 @@ const TextStyle inputDialogSemesters = TextStyle(
   fontFamily: "Rubik",
   color: primary6Color,
 );
+
 const TextStyle subjectDialogSemesters = TextStyle(
   fontSize: 16,
   fontWeight: FontWeight.w500,
@@ -81,6 +82,24 @@ const TextStyle subjectDialogSemesters = TextStyle(
   color: primary6Color,
 );
 const TextStyle semestersDialogSemesters = TextStyle(
+  fontSize: 16,
+  fontWeight: FontWeight.w500,
+  fontFamily: "Rubik",
+  color: primary6Color,
+);
+const TextStyle shortSubName = TextStyle(
+  fontSize: 11,
+  fontWeight: FontWeight.normal,
+  color: primary6Color,
+);
+
+const TextStyle semestDialogMainTextStyle = TextStyle(
+  fontSize: 22,
+  fontWeight: FontWeight.bold,
+  fontFamily: "Rubik",
+  color: primary6Color,
+);
+const TextStyle subjectMainTextDialogSemesters = TextStyle(
   fontSize: 16,
   fontWeight: FontWeight.w500,
   fontFamily: "Rubik",

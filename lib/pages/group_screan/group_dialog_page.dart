@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:education_analizer/controlles/group_dialog_page_controller.dart';
 import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
@@ -224,7 +222,6 @@ class GroupDialog extends StatelessWidget {
                     ),
                     decoration: const InputDecoration(
                       border: InputBorder.none,
-                      hintText: 'Описание',
                     ),
                     readOnly: true, // Поле только для чтения
                     onTap: () async {

@@ -1,8 +1,4 @@
-import 'package:education_analizer/bindings/group_bildings.dart';
-import 'package:education_analizer/bindings/main_bindings.dart';
 import 'package:education_analizer/design/dialog/styles.dart';
-import 'package:education_analizer/pages/group_screan/group_page.dart';
-import 'package:education_analizer/pages/main_screan/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
 import 'package:education_analizer/design/widgets/images.dart';
@@ -36,7 +32,7 @@ class CustomDrawer extends StatelessWidget {
               style: styleDrawer,
             ),
             onTap: () {
-              Get.to(() => const MainPage(), binding: MainBindings());
+              Get.toNamed("/home");
             },
           ),
           ListTile(
@@ -50,7 +46,7 @@ class CustomDrawer extends StatelessWidget {
               style: styleDrawer,
             ),
             onTap: () {
-              Get.to(() => const GroupPage(), binding: GroupBindings());
+              Get.toNamed("/group");
             },
           ),
           ListTile(
@@ -78,7 +74,7 @@ class CustomDrawer extends StatelessWidget {
               style: styleDrawer,
             ),
             onTap: () {
-              Navigator.pop(context);
+              Get.toNamed("/subject");
             },
           ),
           ListTile(
