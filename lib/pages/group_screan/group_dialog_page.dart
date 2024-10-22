@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:education_analizer/controlles/group_dialog_page_controller.dart';
 import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
@@ -25,6 +27,7 @@ class GroupDialog extends StatelessWidget {
     final TextEditingController groupNameController =
         TextEditingController(text: initialGroupName ?? "");
     final TextEditingController searchController = TextEditingController();
+    dialogController.groupId.value = groupId;
 
     // Загружаем данные после первого кадра
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -35,8 +38,9 @@ class GroupDialog extends StatelessWidget {
 
       // Загружаем данные
       await dialogController.fetchAllSubjects();
-      if (groupId != null) {
-        await dialogController.fetchAllListOfSubjectByGroupId(groupId!);
+      if (dialogController.groupId.value != null) {
+        await dialogController
+            .fetchAllListOfSubjectByGroupId(dialogController.groupId.value!);
       }
 
       dialogController.isLoading.value = false; // Завершаем загрузку
@@ -62,11 +66,20 @@ class GroupDialog extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildDialogTitle(),
+                _buildDialogTitle(dialogController),
                 const SizedBox(height: 10),
                 _buildGroupNameField(groupNameController),
-                const SizedBox(height: 20),
-                _buildSearchField(searchController),
+                Obx(() {
+                  return Visibility(
+                    visible: dialogController.groupId.value != null,
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        _buildSearchField(searchController),
+                      ],
+                    ),
+                  );
+                }),
                 const SizedBox(height: 20),
                 _buildSubjectList(dialogController, listofsubjectRepository),
                 const SizedBox(height: 20),
@@ -80,9 +93,11 @@ class GroupDialog extends StatelessWidget {
   }
 
   // Метод для построения заголовка диалогового окна
-  Widget _buildDialogTitle() {
+  Widget _buildDialogTitle(GroupDialogPageController dialogController) {
     return Text(
-      groupId == null ? 'Создать новую группу' : 'Редактировать группу',
+      dialogController.groupId.value == null
+          ? 'Создать новую группу'
+          : 'Редактировать группу',
       style: dialogMainTextStyle,
     );
   }
@@ -119,7 +134,7 @@ class GroupDialog extends StatelessWidget {
         // Проверка состояния загрузки
         if (dialogController.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
-        } else if (groupId == null) {
+        } else if (dialogController.groupId.value == null) {
           // Если groupId равен null, показываем сообщение
           return const Center(
             child: Text(
@@ -151,7 +166,7 @@ class GroupDialog extends StatelessWidget {
     final subject = dialogController.filteredSubjects[index];
     String semesterNumbers = '';
 
-    if (groupId != null) {
+    if (dialogController.groupId.value != null) {
       // Ищем все объекты ListOfSubject с соответствующим subjectId
       final matchingSubjects = dialogController.listOfSubjects
           .where((listSubj) => listSubj.subjectId == subject.id)
@@ -197,13 +212,13 @@ class GroupDialog extends StatelessWidget {
                   List<ListOfSubject> listOfSubjects =
                       await listOfSubjectRepository
                           .getListOfSubjectsBySubjectGroupId(
-                              groupId!, subject.id!);
+                              dialogController.groupId.value!, subject.id!);
 
                   // Вызываем диалоговое окно с полученным списком предметов
                   List<int> selectedSemesters = await SemesterDialogPage.show(
                     context,
                     listOfSubjects, // Передаем полученный список предметов
-                    groupId!,
+                    dialogController.groupId.value!,
                     subject.id!,
                   );
                 },
@@ -228,18 +243,18 @@ class GroupDialog extends StatelessWidget {
                       List<ListOfSubject> listOfSubjects =
                           await listOfSubjectRepository
                               .getListOfSubjectsBySubjectGroupId(
-                                  groupId!, subject.id!);
+                                  dialogController.groupId.value!, subject.id!);
 
                       // Вызываем диалоговое окно с полученным списком предметов
                       List<int> selectedSemesters =
                           await SemesterDialogPage.show(
                         context,
                         listOfSubjects, // Передаем полученный список предметов
-                        groupId!,
+                        dialogController.groupId.value!,
                         subject.id!,
                       );
-                      await dialogController
-                          .fetchAllListOfSubjectByGroupId(groupId!);
+                      await dialogController.fetchAllListOfSubjectByGroupId(
+                          dialogController.groupId.value!);
                     },
                   ),
                 ),
@@ -259,13 +274,13 @@ class GroupDialog extends StatelessWidget {
       child: ElevatedButton(
         style: _elevationButtonStyle(),
         onPressed: () {
-          if (groupId == null) {
+          if (dialogController.groupId.value == null) {
             dialogController.createNewGroup(
               groupName: groupNameController.text.trim(),
             );
           } else {
             dialogController.editGroup(
-              id: groupId!,
+              id: dialogController.groupId.value!,
               groupName: groupNameController.text.trim(),
             );
           }

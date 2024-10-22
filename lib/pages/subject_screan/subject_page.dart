@@ -1,7 +1,7 @@
-import 'dart:developer';
 import 'package:education_analizer/controlles/subject_dialog_controller.dart';
 import 'package:education_analizer/controlles/subject_page_controller.dart';
 import 'package:education_analizer/design/dialog/app_bar.dart';
+import 'package:education_analizer/design/dialog/confirmation_dialog.dart';
 import 'package:education_analizer/design/dialog/drawer.dart';
 import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
@@ -36,6 +36,8 @@ class SubjectPage extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.topRight,
                   child: FloatingActionButton(
+                    backgroundColor: primary6Color,
+                    child: const Icon(Icons.add, color: Colors.white),
                     onPressed: () {
                       final dialogController = SubjectDialogController(
                           subjectPageController: subjectPageController);
@@ -48,7 +50,6 @@ class SubjectPage extends StatelessWidget {
                         }
                       });
                     },
-                    child: const Icon(Icons.add),
                   ),
                 ),
               ),
@@ -81,8 +82,9 @@ class SubjectPage extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: semestDialogMainTextStyle,
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 15),
                       TextField(
+                        style: inputDialogSemesters,
                         decoration: InputDecoration(
                           labelText: "Поиск предмета",
                           labelStyle: styleDrawer,
@@ -163,10 +165,24 @@ class SubjectPage extends StatelessWidget {
                                       IconButton(
                                         icon: const Icon(Icons.delete),
                                         onPressed: () async {
-                                          await subjectPageController
-                                              .subjectRepository
-                                              .deleteSubject(subject.id);
-                                          subjectPageController.fetchSubjects();
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return ConfirmationDialog(
+                                                title: "Удаление предмета",
+                                                message:
+                                                    "Вы уверены, что хотете удалить: ${subject.subjectNameLong}",
+                                                onConfirm: () async {
+                                                  await subjectPageController
+                                                      .subjectRepository
+                                                      .deleteSubject(
+                                                          subject.id);
+                                                  subjectPageController
+                                                      .fetchSubjects();
+                                                },
+                                              );
+                                            },
+                                          );
                                         },
                                       ),
                                     ],

@@ -19,11 +19,10 @@ class GroupDialogPageController extends GetxController {
   var filteredSubjects = <Subject>[].obs; // Отфильтрованный список предметов
   var listOfSubjects = <ListOfSubject>[].obs; // Список листов предметов
   var isLoading = false.obs; // Флаг для состояния загрузки данных
-  var subjectsByGroupAndSubject = <ListOfSubject>[]
-      .obs; // Новая переменная для хранения предметов по группе и предмету
+  var subjectsByGroupAndSubject = <ListOfSubject>[].obs;
+  var groupId = Rx<int?>(null);
 
   bool isEditing = false; // Флаг режима редактирования
-  int? groupId; // ID редактируемой группы
 
   // Конструктор
   GroupDialogPageController(
@@ -39,6 +38,12 @@ class GroupDialogPageController extends GetxController {
   void onInit() {
     super.onInit();
     fetchAllSubjects(); // Загружаем предметы при инициализации
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
+    groupId.value = null; // Очищаем значение groupId при закрытии
   }
 
   // Метод для создания новой группы
@@ -127,13 +132,13 @@ class GroupDialogPageController extends GetxController {
   // Устанавливаем параметры для редактирования группы
   void setEditingParameters(int id,
       {required String groupName, int? curatorId}) {
-    groupId = id;
+    groupId.value = id;
     isEditing = true;
   }
 
   // Сбрасываем параметры редактирования
   void resetEditingParameters() {
-    groupId = null;
+    groupId.value = null;
     isEditing = false;
   }
 

@@ -1,4 +1,6 @@
 import 'package:education_analizer/controlles/subject_dialog_controller.dart';
+import 'package:education_analizer/design/dialog/styles.dart';
+import 'package:education_analizer/design/widgets/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -31,30 +33,60 @@ class SubjectDialog extends StatelessWidget {
                 controller.subjectId == null
                     ? 'Создать предмет'
                     : 'Редактировать предмет',
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: semestDialogMainTextStyle,
+              ),
+              const SizedBox(height: 15),
+              TextField(
+                style: inputDialogSemesters,
+                controller: shortNameController, // Установка контроллера
+                decoration: InputDecoration(
+                  labelStyle: styleDrawer,
+                  labelText: 'Абревиатура',
+                  filled: true,
+                  fillColor: primary8Color,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
               TextField(
-                controller: shortNameController, // Установка контроллера
-                decoration:
-                    const InputDecoration(labelText: 'Короткое название'),
-              ),
-              TextField(
+                style: inputDialogSemesters,
                 controller: longNameController, // Установка контроллера
-                decoration:
-                    const InputDecoration(labelText: 'Длинное название'),
+                decoration: InputDecoration(
+                    labelText: 'Полное название',
+                    labelStyle: styleDrawer,
+                    filled: true,
+                    fillColor: primary8Color,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    )),
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  controller.subjectNameShort = shortNameController.text;
-                  controller.subjectNameLong = longNameController.text;
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all<Color>(
+                        const Color(0xFF1D427A),
+                      ),
+                    ),
+                    onPressed: () async {
+                      controller.subjectNameShort = shortNameController.text;
+                      controller.subjectNameLong = longNameController.text;
 
-                  await controller.saveSubject();
-                  Get.back(result: true); // Закрыть диалог и вернуть результат
-                },
-                child: const Text('Сохранить'),
+                      await controller.saveSubject();
+                      Get.back(
+                          result: true); // Закрыть диалог и вернуть результат
+                    },
+                    child: const Text(
+                      'Сохранить',
+                      style: dropdownButtonTextStyle,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),

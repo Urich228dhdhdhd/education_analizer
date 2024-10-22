@@ -105,3 +105,9 @@ const TextStyle subjectMainTextDialogSemesters = TextStyle(
   fontFamily: "Rubik",
   color: primary6Color,
 );
+const TextStyle buttonSubjectDialogTextStyle = TextStyle(
+  fontSize: 20,
+  fontWeight: FontWeight.normal,
+  fontFamily: "Rubik",
+  color: primary5Color,
+);

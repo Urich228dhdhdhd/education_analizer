@@ -15,7 +15,7 @@ import 'package:education_analizer/pages/authorization_screan/login_page.dart';
 import 'package:education_analizer/pages/group_screan/group_page.dart';
 import 'package:education_analizer/pages/main_screan/main_page.dart';
 import 'package:education_analizer/pages/performance_screan/performance_page.dart';
-import 'package:education_analizer/pages/srudent_screan/student_page.dart';
+import 'package:education_analizer/pages/student_screan/student_page.dart';
 import 'package:education_analizer/pages/subject_screan/subject_page.dart';
 import 'package:education_analizer/pages/user_manager_screan/user_page.dart';
 import 'package:flutter/material.dart';

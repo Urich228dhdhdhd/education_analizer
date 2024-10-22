@@ -41,7 +41,6 @@ class SubjectPageController extends GetxController {
     try {
       isLoading(true);
       List<dynamic> fetchedSubjects = await subjectRepository.getSubjects();
-
       // Преобразуем List<dynamic> в List<Subject>
       List<Subject> subjectList = fetchedSubjects
           .map((subjectJson) => Subject.fromJson(subjectJson))
