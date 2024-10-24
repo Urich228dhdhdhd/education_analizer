@@ -7,7 +7,7 @@ import 'package:education_analizer/bindings/login_bindings.dart';
 import 'package:education_analizer/bindings/main_bindings.dart';
 import 'package:education_analizer/bindings/performance_bindings.dart';
 import 'package:education_analizer/bindings/student_bindings.dart';
-import 'package:education_analizer/bindings/subject_page_bildings.dart';
+import 'package:education_analizer/bindings/subject_bildings.dart';
 import 'package:education_analizer/bindings/user_bindings.dart';
 import 'package:education_analizer/controlles/user_controller.dart';
 import 'package:education_analizer/pages/absence_screan/absence_page.dart';
@@ -41,7 +41,7 @@ void main() {
       GetPage(
           name: "/subject",
           page: () => const SubjectPage(),
-          binding: SubjectPageBildings()),
+          binding: SubjectBildings()),
       GetPage(
           name: "/student",
           page: () => const StudentPage(),

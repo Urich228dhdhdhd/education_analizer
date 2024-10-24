@@ -6,6 +6,7 @@ class GroupRepository extends GetxService {
   final String url =
       "http://192.168.100.8:3000/api/groups"; // 192.168.100.8 localhost
   final Dio dio = Dio();
+  
 
   // Получение групп по роли
   Future<List<Map<String, dynamic>>> getGroupByRole({
@@ -44,7 +45,7 @@ class GroupRepository extends GetxService {
         url,
         data: {
           "group_name": groupName,
-          "curator_id:": curatorId,
+          "curator_id": curatorId,
           "status_group": statusGroup,
           "semester_number": semesterNumber,
         },

@@ -24,13 +24,11 @@ class SubjectPage extends StatelessWidget {
       drawer:
           CustomDrawer(role: subjectPageController.authController.role.value),
       body: SingleChildScrollView(
-        // Используем SingleChildScrollView
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
-            mainAxisSize: MainAxisSize.min, // Измените это значение
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Кнопка "+" для добавления нового предмета
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Align(

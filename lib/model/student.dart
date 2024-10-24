@@ -37,4 +37,10 @@ class Student {
     data['group_id'] = groupId;
     return data;
   }
+
+  // Переопределение метода toString для удобного логгирования
+  @override
+  String toString() {
+    return 'Student{id: $id, firstName: $firstName, middleName: $middleName, lastName: $lastName, telNumber: $telNumber, dateBirthday: $dateBirthday, groupId: $groupId}';
+  }
 }

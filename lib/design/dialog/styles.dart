@@ -100,7 +100,7 @@ const TextStyle semestDialogMainTextStyle = TextStyle(
   color: primary6Color,
 );
 const TextStyle subjectMainTextDialogSemesters = TextStyle(
-  fontSize: 16,
+  fontSize: 15,
   fontWeight: FontWeight.w500,
   fontFamily: "Rubik",
   color: primary6Color,
