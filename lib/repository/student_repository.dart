@@ -1,10 +1,12 @@
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:education_analizer/model/student.dart';
+import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
 
 class StudentRepository extends GetxService {
-  final String url = "http://192.168.100.8:3000/api/students";
+  final String url = "$mainUrl/api/students";
   final Dio dio = Dio();
 
   // Получение всех студентов
@@ -74,6 +76,21 @@ class StudentRepository extends GetxService {
     } catch (e) {
       log("Ошибка при получении студентов по роли: $e");
       throw Exception('Ошибка при получении студентов по роли');
+    }
+  }
+
+  // Получение студентов по ID группы
+  Future<List<Student>> getStudentsByGroupId(int groupId) async {
+    try {
+      final response = await dio.get('$url/get/by-group/$groupId');
+      // Преобразование данных ответа в список объектов Student
+      List<Student> students = (response.data as List)
+          .map((studentJson) => Student.fromJson(studentJson))
+          .toList();
+      return students; // Возвращает список студентов
+    } catch (e) {
+      log("Ошибка при получении студентов по ID группы $groupId: $e");
+      throw Exception('Ошибка при получении студентов по ID группы');
     }
   }
 }

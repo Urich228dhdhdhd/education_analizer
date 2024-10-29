@@ -18,8 +18,8 @@ class StudentPageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchStudent(); // Загрузка студентов
     fetchGroups();
+    fetchStudent(); // Загрузка студентов
   }
 
   StudentPageController(

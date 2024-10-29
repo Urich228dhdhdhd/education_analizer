@@ -51,7 +51,7 @@ void main() {
           page: () => const PerformancePage(),
           binding: PerformanceBindings()),
       GetPage(
-          name: "/abdence",
+          name: "/absence",
           page: () => const AbsencePage(),
           binding: AbsenceBindings()),
       GetPage(

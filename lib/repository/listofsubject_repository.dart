@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:education_analizer/model/list_of_subject.dart';
+import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
 
 class ListofsubjectRepository extends GetxService {
-  final String url =
-      "http://192.168.100.8:3000/api/listOfSubjects"; // 192.168.100.8 localhost
+  final String url = "$mainUrl/api/listOfSubjects"; // 192.168.100.8 localhost
   final Dio dio = Dio();
 
   // Получение всех предметов

@@ -41,4 +41,9 @@ class Absence {
     data['absence_disresp'] = absenceDisresp;
     return data;
   }
+
+  @override
+  String toString() {
+    return 'Absence{id: $id, studentId: $studentId, year: $year, month: $month, absenceIllness: $absenceIllness, absenceOrder: $absenceOrder, absenceResp: $absenceResp, absenceDisresp: $absenceDisresp}';
+  }
 }

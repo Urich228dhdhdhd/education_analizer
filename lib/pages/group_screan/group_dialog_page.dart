@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:education_analizer/controlles/group_dialog_page_controller.dart';
 import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:education_analizer/design/widgets/colors.dart';

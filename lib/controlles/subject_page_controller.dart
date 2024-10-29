@@ -1,7 +1,6 @@
 import 'package:education_analizer/controlles/auth_controller.dart';
 import 'package:education_analizer/model/subject.dart';
 import 'package:education_analizer/repository/subject_repository.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class SubjectPageController extends GetxController {

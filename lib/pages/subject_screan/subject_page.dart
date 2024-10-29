@@ -65,7 +65,7 @@ class SubjectPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(radius32),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0x42000000),
+                        color: Color(0xFFc2d0e3),
                         spreadRadius: 10,
                         blurRadius: 10,
                         offset: Offset(3, 3),

@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
 
 class SubjectRepository extends GetxService {
-  final String url =
-      "http://192.168.100.8:3000/api/subjects"; // 192.168.100.8 localhost
+  final String url = "$mainUrl/api/subjects"; // 192.168.100.8 localhost
   final Dio dio = Dio();
 
   // Получить все предметы
