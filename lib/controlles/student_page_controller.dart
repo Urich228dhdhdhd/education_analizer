@@ -16,10 +16,10 @@ class StudentPageController extends GetxController {
   var isLoading = false.obs;
 
   @override
-  void onInit() {
+  void onInit() async {
+    await fetchGroups();
+    await fetchStudent(); // Загрузка студентов
     super.onInit();
-    fetchGroups();
-    fetchStudent(); // Загрузка студентов
   }
 
   StudentPageController(
@@ -37,6 +37,7 @@ class StudentPageController extends GetxController {
       students.assignAll(fetchedStudents
           .map((studentJson) => Student.fromJson(studentJson))
           .toList());
+      log(students.toString());
     } catch (error) {
       log("Ошибка при получении студентов: $error");
     } finally {
@@ -45,8 +46,9 @@ class StudentPageController extends GetxController {
   }
 
   // Метод для загрузки всех групп
-  void fetchGroups() async {
+  Future<void> fetchGroups() async {
     try {
+      isLoading(true);
       var allGroups = await groupRepository.getGroupByRole(
           id: authController.id.value,
           role: authController.role.value); // Получаем все группы
@@ -54,7 +56,7 @@ class StudentPageController extends GetxController {
         groups[group['id']] =
             group['group_name']; // Кэшируем название группы по её ID
       }
-      log(allGroups.toString());
+      isLoading(false);
     } catch (e) {
       // Обработка ошибок
     }

@@ -4,11 +4,14 @@ import 'package:education_analizer/model/list_of_subject.dart';
 import 'package:education_analizer/model/subject.dart';
 import 'package:education_analizer/repository/group_repository.dart';
 import 'package:education_analizer/repository/listofsubject_repository.dart';
+import 'package:education_analizer/repository/semester_repository.dart';
 import 'package:education_analizer/repository/subject_repository.dart';
 import 'package:get/get.dart';
 
 class GroupDialogPageController extends GetxController {
   final GroupRepository groupRepository;
+  final SemesterRepository semesterRepository;
+
   final GroupPageController groupPageController;
   final SubjectRepository subjectRepository;
   final ListofsubjectRepository listofsubjectRepository;
@@ -21,12 +24,15 @@ class GroupDialogPageController extends GetxController {
   var isLoading = false.obs; // Флаг для состояния загрузки данных
   var subjectsByGroupAndSubject = <ListOfSubject>[].obs;
   var groupId = Rx<int?>(null);
+  var startYear = Rxn<int>().obs; // Начальный год
+  var endYear = Rxn<int>().obs; // Конечный год
 
   bool isEditing = false; // Флаг режима редактирования
 
   // Конструктор
   GroupDialogPageController(
     this.groupPageController, {
+    required this.semesterRepository,
     required this.semesterSelectionController,
     required this.listofsubjectRepository,
     required this.subjectRepository,
@@ -38,12 +44,6 @@ class GroupDialogPageController extends GetxController {
   void onInit() {
     super.onInit();
     fetchAllSubjects(); // Загружаем предметы при инициализации
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
-    groupId.value = null; // Очищаем значение groupId при закрытии
   }
 
   // Метод для создания новой группы

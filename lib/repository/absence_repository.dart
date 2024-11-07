@@ -40,7 +40,7 @@ class AbsenceRepository extends GetxService {
         '$url/check',
         data: {'student_id': studentId, 'year': year, 'month': month},
       );
-      log(response.data.toString());
+      // log(response.data.toString());
       return response.data != null ? Absence.fromJson(response.data) : null;
     } catch (e) {
       if (e is DioException && e.response?.statusCode == 404) {

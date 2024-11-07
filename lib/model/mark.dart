@@ -24,4 +24,9 @@ class Mark {
     data['mark'] = mark;
     return data;
   }
+
+  @override
+  String toString() {
+    return 'Mark(id: $id, studentId: $studentId, semesterId: $semesterId, subjectId: $subjectId,mark: $mark )\n';
+  }
 }

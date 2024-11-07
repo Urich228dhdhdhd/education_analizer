@@ -160,18 +160,23 @@ class AbsencePage extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Выберите группу'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: groupList.map((group) {
-                return ListTile(
-                  title: Text(group.groupName.toString()),
-                  onTap: () {
-                    controller.setSelectedGroup(group.id!);
-                    log("Выбрана группа ${group.groupName} с id:${group.id}");
-                    Navigator.pop(context);
-                  },
-                );
-              }).toList(),
+          content: SizedBox(
+            height: 200,
+            width: double.minPositive,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: groupList.map((group) {
+                  return ListTile(
+                    title: Text(group.groupName.toString()),
+                    onTap: () {
+                      controller.setSelectedGroup(group.id!);
+                      // log("Выбрана группа ${group.groupName} с id:${group.id}");
+                      Navigator.pop(context);
+                    },
+                  );
+                }).toList(),
+              ),
             ),
           ),
           actions: [
@@ -226,8 +231,8 @@ class AbsencePage extends StatelessWidget {
             onChanged: (DateTime dateTime) {
               Navigator.pop(context, dateTime);
             },
-            firstDate: DateTime(2000),
-            lastDate: DateTime(2100),
+            firstDate: DateTime(DateTime.now().year - 100),
+            lastDate: DateTime(DateTime.now().year + 100),
             datePickerStyles: dp.DatePickerRangeStyles(
               selectedDateStyle: const TextStyle(
                 color: Colors.white,
@@ -244,7 +249,7 @@ class AbsencePage extends StatelessWidget {
     );
 
     if (result != null) {
-      controller.dateTime.value = result;
+      controller.setDate(result);
     }
   }
 
@@ -313,6 +318,27 @@ class AbsencePage extends StatelessWidget {
                         style:
                             const TextStyle(color: Colors.black), // Цвет текста
                       ),
+                      subtitle: Obx(() {
+                        final absenceEntry = controller.absences.firstWhere(
+                          (absenceMap) => absenceMap[student.id!] != null,
+                          orElse: () => {
+                            student.id!: null
+                          }, // Возвращаем null, если нет пропусков
+                        );
+                        final absence = absenceEntry[student.id!];
+
+                        if (absence != null) {
+                          return Text(
+                            "Больничный лист:${absence.absenceIllness} Приказ:${absence.absenceOrder} Уважительная:${absence.absenceResp} Неуважительная:${absence.absenceDisresp}",
+                            style: const TextStyle(
+                                color:
+                                    Colors.black), // Цвет текста для пропусков
+                          );
+                        } else {
+                          return const Text(
+                              'Пропуски не отмечены'); // Если данных о пропусках нет
+                        }
+                      }),
                       trailing: IconButton(
                         icon: const Icon(Icons.edit),
                         onPressed: () async {
@@ -323,7 +349,6 @@ class AbsencePage extends StatelessWidget {
                             controller.dateTime.value.year,
                             controller.dateTime.value.month,
                           );
-                          log("Id:${student.id.toString()} Month:${controller.dateTime.value.year.toString()} year: ${controller.dateTime.value.month.toString()}");
                           AbsenceDialogController absenceDialogController =
                               Get.find();
                           // Устанавливаем данные в контроллер для диалога

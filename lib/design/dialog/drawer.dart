@@ -88,7 +88,7 @@ class CustomDrawer extends StatelessWidget {
               style: styleDrawer,
             ),
             onTap: () {
-              Navigator.pop(context);
+              Get.toNamed("/performance");
             },
           ),
           ListTile(

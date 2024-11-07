@@ -68,7 +68,7 @@ class StudentRepository extends GetxService {
   Future<List<dynamic>> getStudentsByRole(
       {required int userId, required String userRole}) async {
     try {
-      final response = await dio.get('$url/get/by-role', data: {
+      final response = await dio.post('$url/get/by-role', data: {
         'userId': userId,
         'userRole': userRole,
       });

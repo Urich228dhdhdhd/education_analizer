@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:education_analizer/controlles/auth_controller.dart';
 import 'package:education_analizer/model/group.dart';
 import 'package:education_analizer/model/student.dart';
+import 'package:education_analizer/model/absence.dart';
 import 'package:education_analizer/repository/absence_repository.dart';
 import 'package:education_analizer/repository/group_repository.dart';
 import 'package:education_analizer/repository/student_repository.dart';
@@ -17,20 +18,23 @@ class AbsencePageController extends GetxController {
   var dateTime = DateTime.now().obs;
   var groups = <Group>[].obs;
   var students = <Student>[].obs;
+  var absences =
+      <Map<int, Absence?>>{}.obs; // Объявляем переменную для хранения пропусков
   var selectedGroupId = Rxn<int>(null);
-  var isLoading = false.obs; // Индикатор загрузки
+  var isLoading = false.obs;
+
   @override
   void onInit() async {
     await loadGroups();
-
     super.onInit();
   }
 
-  AbsencePageController(
-      {required this.groupRepository,
-      required this.studentRepository,
-      required this.absenceRepository,
-      required this.authController});
+  AbsencePageController({
+    required this.groupRepository,
+    required this.studentRepository,
+    required this.absenceRepository,
+    required this.authController,
+  });
 
   Future<void> loadGroups() async {
     try {
@@ -45,9 +49,8 @@ class AbsencePageController extends GetxController {
 
       // Обновляем список групп
       groups.assignAll(loadedGroups);
-      log(groups.map((group) => group.toJson()).toList().toString());
     } catch (e) {
-      print("Ошибка загрузки групп: $e");
+      log("Ошибка загрузки групп: $e");
     }
   }
 
@@ -68,8 +71,44 @@ class AbsencePageController extends GetxController {
     }
   }
 
-  void setSelectedGroup(int groupId) {
+  // Новый метод для загрузки пропусков
+  Future<void> loadAbsences() async {
+    if (selectedGroupId.value == null) {
+      log("Группа не выбрана, пропуски не могут быть загружены.");
+      return;
+    }
+
+    try {
+      isLoading(true);
+      log("message");
+      var loadedAbsences = <Map<int, Absence?>>[];
+
+      for (var student in students) {
+        var absence = await absenceRepository.checkAbsence(
+          student.id!,
+          dateTime.value.year,
+          dateTime.value.month,
+        );
+        loadedAbsences.add({student.id!: absence});
+      }
+      log(loadedAbsences.toString());
+      absences.assignAll(loadedAbsences); // Обновляем список пропусков
+      isLoading(false);
+    } catch (e) {
+      print("Ошибка загрузки пропусков: $e");
+      isLoading(false);
+    }
+  }
+
+  void setSelectedGroup(int groupId) async {
     selectedGroupId.value = groupId;
-    loadStudents();
+    await loadStudents();
+    await loadAbsences();
+  }
+
+  // Обновляем метод выбора даты для загрузки пропусков при изменении даты
+  void setDate(DateTime newDate) async {
+    dateTime.value = newDate;
+    await loadAbsences(); // Загружаем пропуски для новой даты
   }
 }

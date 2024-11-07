@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:education_analizer/model/list_of_subject.dart';
+import 'package:education_analizer/model/subject.dart';
 import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
 
@@ -49,6 +52,27 @@ class ListofsubjectRepository extends GetxService {
       return response.data;
     } catch (e) {
       throw Exception('Ошибка при получении предмета по ID: $e');
+    }
+  }
+
+  Future<List<Subject>> getSubjectsByGroupId(int groupId) async {
+    try {
+      final response = await dio.get('$url/subjectIds/$groupId');
+
+      // Извлекаем данные из вложенного объекта subject
+      List<dynamic> data = response.data;
+      final subjects = data.map((item) {
+        return Subject.fromJson({
+          'id': item['subject_id'],
+          'subject_name_short': item['subject']?['subject_name_short'],
+          'subject_name_long': item['subject']?['subject_name_long'],
+        });
+      }).toList();
+
+      return subjects;
+    } catch (e) {
+      throw Exception(
+          'Ошибка при получении списка предметов с краткими именами по group_id: $e');
     }
   }
 

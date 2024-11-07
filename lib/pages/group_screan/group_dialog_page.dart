@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:education_analizer/controlles/group_dialog_page_controller.dart';
 import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
@@ -67,12 +69,61 @@ class GroupDialog extends StatelessWidget {
                 _buildDialogTitle(dialogController),
                 const SizedBox(height: 10),
                 _buildGroupNameField(groupNameController),
+                const SizedBox(height: 10),
+                Obx(() {
+                  return Visibility(
+                    visible: dialogController.groupId.value == null,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            style: inputDialogSemesters,
+                            decoration: InputDecoration(
+                              labelStyle: styleDrawer,
+                              filled: true,
+                              fillColor: primary8Color,
+                              labelText: 'Год начала обучения',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                            keyboardType: TextInputType.number,
+                            onChanged: (value) {
+                              dialogController.startYear.value.value =
+                                  int.tryParse(value);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 5), // Отступ между полями
+                        Expanded(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              labelStyle: styleDrawer,
+                              filled: true,
+                              fillColor: primary8Color,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              labelText: 'Год окончания обучения',
+                            ),
+                            keyboardType: TextInputType.number,
+                            onChanged: (value) {
+                              // Сохраняем введенное значение в контроллере
+                              dialogController.endYear.value.value =
+                                  int.tryParse(value);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
                 Obx(() {
                   return Visibility(
                     visible: dialogController.groupId.value != null,
                     child: Column(
                       children: [
-                        const SizedBox(height: 20),
+                        // const SizedBox(height: 20),
                         _buildSearchField(searchController),
                       ],
                     ),
@@ -271,18 +322,25 @@ class GroupDialog extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton(
         style: _elevationButtonStyle(),
-        onPressed: () {
-          if (dialogController.groupId.value == null) {
-            dialogController.createNewGroup(
-              groupName: groupNameController.text.trim(),
-            );
-          } else {
-            dialogController.editGroup(
-              id: dialogController.groupId.value!,
-              groupName: groupNameController.text.trim(),
-            );
+        onPressed: () async {
+          try {
+            if (dialogController.groupId.value == null) {
+              await dialogController.createNewGroup(
+                groupName: groupNameController.text.trim(),
+              );
+              await checkSemesters(dialogController);
+            } else {
+              await dialogController.editGroup(
+                id: dialogController.groupId.value!,
+                groupName: groupNameController.text.trim(),
+              );
+            }
+            Get.close(1);
+          } catch (e) {
+            throw Error();
+          } finally {
+            Get.back();
           }
-          Get.back(); // Закрыть диалог после сохранения
         },
         child: const Text(
           'Сохранить',
@@ -331,5 +389,28 @@ class GroupDialog extends StatelessWidget {
       ),
       suffixIcon: Icon(icon, color: Colors.grey),
     );
+  }
+
+  Future<void> checkSemesters(
+      GroupDialogPageController dialogController) async {
+    for (int year = dialogController.startYear.value.value!;
+        year <= dialogController.endYear.value.value!;
+        year++) {
+      for (int semesterPart = 1; semesterPart <= 2; semesterPart++) {
+        int semesterNumber =
+            (year - dialogController.startYear.value.value!) * 2 + semesterPart;
+
+        bool exists = await dialogController.semesterRepository.isSemesterExist(
+          semesterNumber: semesterNumber,
+          semesterYear: year,
+        );
+        if (!exists) {
+          dialogController.semesterRepository.createSemester(
+              semesterNumber: semesterNumber,
+              semesterYear: year,
+              semesterPart: semesterPart);
+        }
+      }
+    }
   }
 }
