@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:education_analizer/controlles/student_page_controller.dart';
 import 'package:education_analizer/model/student.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class StudentDialogController extends GetxController {
