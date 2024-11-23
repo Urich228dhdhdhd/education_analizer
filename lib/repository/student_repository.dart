@@ -32,13 +32,25 @@ class StudentRepository extends GetxService {
   }
 
   // Создание студента
-  Future<dynamic> createStudent(Map<String, dynamic> studentData) async {
+  Future<Student> createStudent(Map<String, dynamic> studentData) async {
     try {
+      log(studentData.toString());
       final response = await dio.post(url, data: studentData);
-      return response.data; // Возвращает созданного студента
+
+      if (response.statusCode == 200) {
+        return Student.fromJson(response.data);
+      }
+      if (response.statusCode == 400) {
+        throw Exception(response.data["message"] ?? "Ошибка создания");
+      }
+      throw Exception("Неизвестная ошибка: ${response.statusCode}");
+      // } on DioException catch (e) {
+      //   log(e.toString());
+      //   throw Exception(
+      //       e.response?.data["message"] ?? 'Ошибка при создании студента');
     } catch (e) {
-      log("Ошибка при создании студента: $e");
-      throw Exception('Ошибка при создании студента');
+      log("Неожиданная ошибка: $e");
+      throw Exception("Произошла ошибка при создании студента");
     }
   }
 

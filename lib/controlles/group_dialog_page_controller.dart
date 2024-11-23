@@ -6,6 +6,7 @@ import 'package:education_analizer/repository/group_repository.dart';
 import 'package:education_analizer/repository/listofsubject_repository.dart';
 import 'package:education_analizer/repository/semester_repository.dart';
 import 'package:education_analizer/repository/subject_repository.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class GroupDialogPageController extends GetxController {
@@ -17,19 +18,17 @@ class GroupDialogPageController extends GetxController {
   final ListofsubjectRepository listofsubjectRepository;
   final SemesterSelectionController semesterSelectionController;
 
-  // Переменные для работы с данными
-  var subjects = <Subject>[].obs; // Список всех предметов
-  var filteredSubjects = <Subject>[].obs; // Отфильтрованный список предметов
-  var listOfSubjects = <ListOfSubject>[].obs; // Список листов предметов
-  var isLoading = false.obs; // Флаг для состояния загрузки данных
+  var subjects = <Subject>[].obs;
+  var filteredSubjects = <Subject>[].obs;
+  var listOfSubjects = <ListOfSubject>[].obs;
+  var isLoading = false.obs;
   var subjectsByGroupAndSubject = <ListOfSubject>[].obs;
   var groupId = Rx<int?>(null);
-  var startYear = Rxn<int>().obs; // Начальный год
-  var endYear = Rxn<int>().obs; // Конечный год
+  var startYear = Rx<int?>(null);
+  var endYear = Rx<int?>(null);
 
-  bool isEditing = false; // Флаг режима редактирования
+  bool isEditing = false;
 
-  // Конструктор
   GroupDialogPageController(
     this.groupPageController, {
     required this.semesterRepository,
@@ -39,14 +38,12 @@ class GroupDialogPageController extends GetxController {
     required this.groupRepository,
   });
 
-  // Инициализация контроллера
   @override
   void onInit() {
     super.onInit();
-    fetchAllSubjects(); // Загружаем предметы при инициализации
+    fetchAllSubjects();
   }
 
-  // Метод для создания новой группы
   Future<void> createNewGroup({
     required String groupName,
     int? curatorId,
@@ -57,10 +54,8 @@ class GroupDialogPageController extends GetxController {
         curatorId: curatorId,
       );
 
-      // Обновляем список групп в основном контроллере
       groupPageController.findGroupsByRole();
 
-      // Уведомление об успехе
       Get.snackbar(
         'Успех',
         'Группа успешно создана: ${newGroup['group_name']}',
@@ -68,19 +63,18 @@ class GroupDialogPageController extends GetxController {
         duration: const Duration(seconds: 2),
       );
 
-      resetEditingParameters(); // Сброс параметров редактирования
+      resetEditingParameters();
     } catch (e) {
-      // Уведомление об ошибке
       Get.snackbar(
-        'Ошибка',
-        'Не удалось создать группу: ${e.toString()}',
+        "Ошибка",
+        e.toString(),
         snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
+        backgroundColor: const Color.fromRGBO(244, 67, 54, 70),
+        colorText: Colors.white,
       );
     }
   }
 
-  // Метод для редактирования группы
   Future<void> editGroup({
     required int id,
     required String groupName,
@@ -93,10 +87,8 @@ class GroupDialogPageController extends GetxController {
         curatorId: curatorId,
       );
 
-      // Обновляем список групп в основном контроллере
       groupPageController.findGroupsByRole();
 
-      // Уведомление об успехе
       Get.snackbar(
         'Успех',
         'Группа успешно обновлена: ${updatedGroup['group_name']}',
@@ -129,14 +121,12 @@ class GroupDialogPageController extends GetxController {
     }
   }
 
-  // Устанавливаем параметры для редактирования группы
   void setEditingParameters(int id,
       {required String groupName, int? curatorId}) {
     groupId.value = id;
     isEditing = true;
   }
 
-  // Сбрасываем параметры редактирования
   void resetEditingParameters() {
     groupId.value = null;
     isEditing = false;
@@ -162,11 +152,10 @@ class GroupDialogPageController extends GetxController {
         duration: const Duration(seconds: 2),
       );
     } finally {
-      isLoading(false); // Выключаем индикатор загрузки
+      isLoading(false);
     }
   }
 
-  // Фильтрация предметов по запросу
   void filterSubjects(String query) {
     filteredSubjects.assignAll(
       subjects.where((subject) {

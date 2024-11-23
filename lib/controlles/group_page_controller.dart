@@ -9,10 +9,8 @@ class GroupPageController extends GetxController {
   final GroupRepository groupRepository;
   GroupPageController(this.groupRepository, {required this.authController});
 
-  // Реактивный список для групп
   var groups = <Map<String, dynamic>>[].obs;
 
-  // Метод для получения групп
   void findGroupsByRole() async {
     try {
       int id = authController.id.value;
@@ -20,15 +18,13 @@ class GroupPageController extends GetxController {
       var result = await groupRepository.getGroupByRole(id: id, role: role);
 
       groups.value = result;
-      // log(groups.value.toString());
     } catch (e) {
       log('Ошибка при получении групп: $e');
     }
   }
 
-  // Метод для обновления списка групп
   void refreshGroups() {
-    findGroupsByRole(); // Повторно получить группы
+    findGroupsByRole();
   }
 
   @override

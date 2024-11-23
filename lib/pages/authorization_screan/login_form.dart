@@ -27,20 +27,19 @@ class LoginForm extends StatelessWidget {
             style: mainAuthorizationTextStyle,
             textAlign: TextAlign.center,
           ),
-          const SizedBox(
-              height: 20), // Уменьшили отступ между заголовком и полями ввода
+          const SizedBox(height: 20),
           TextField(
             controller: loginController,
             style: style2,
-            decoration: StylishInput(label: "Логин", image: userImage),
+            decoration: stylishInput(label: "Логин", image: userImage),
           ),
-          const SizedBox(height: 15), // Уменьшили отступ между полями ввода
+          const SizedBox(height: 15),
           TextField(
               controller: passwordController,
               style: style2,
-              obscureText: true, // Скрываем текст пароля
-              decoration: StylishInput(label: "Пароль", image: passwordImage)),
-          const SizedBox(height: 25), // Отступ перед кнопкой
+              obscureText: true,
+              decoration: stylishInput(label: "Пароль", image: passwordImage)),
+          const SizedBox(height: 25),
           ElevatedButton(
               onPressed: () {
                 pageController.goAuth(
@@ -56,7 +55,7 @@ class LoginForm extends StatelessWidget {
     );
   }
 
-  InputDecoration StylishInput(
+  InputDecoration stylishInput(
       {required String label, required SvgPicture image}) {
     return InputDecoration(
       labelStyle: style2,

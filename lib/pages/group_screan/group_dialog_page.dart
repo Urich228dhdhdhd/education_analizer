@@ -21,6 +21,7 @@ class GroupDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final FocusNode focusNode = FocusNode();
     final GroupDialogPageController dialogController = Get.find();
     final ListofsubjectRepository listofsubjectRepository = Get.find();
 
@@ -29,24 +30,20 @@ class GroupDialog extends StatelessWidget {
     final TextEditingController searchController = TextEditingController();
     dialogController.groupId.value = groupId;
 
-    // Загружаем данные после первого кадра
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Начинаем загрузку
       dialogController.isLoading.value = true;
 
       await Future.delayed(const Duration(milliseconds: 100));
 
-      // Загружаем данные
       await dialogController.fetchAllSubjects();
       if (dialogController.groupId.value != null) {
         await dialogController
             .fetchAllListOfSubjectByGroupId(dialogController.groupId.value!);
       }
 
-      dialogController.isLoading.value = false; // Завершаем загрузку
+      dialogController.isLoading.value = false;
     });
 
-    // Слушаем изменения в поле поиска
     searchController.addListener(() {
       dialogController.filterSubjects(searchController.text);
     });
@@ -89,7 +86,7 @@ class GroupDialog extends StatelessWidget {
                             ),
                             keyboardType: TextInputType.number,
                             onChanged: (value) {
-                              dialogController.startYear.value.value =
+                              dialogController.startYear.value =
                                   int.tryParse(value);
                             },
                           ),
@@ -109,7 +106,7 @@ class GroupDialog extends StatelessWidget {
                             keyboardType: TextInputType.number,
                             onChanged: (value) {
                               // Сохраняем введенное значение в контроллере
-                              dialogController.endYear.value.value =
+                              dialogController.endYear.value =
                                   int.tryParse(value);
                             },
                           ),
@@ -124,13 +121,14 @@ class GroupDialog extends StatelessWidget {
                     child: Column(
                       children: [
                         // const SizedBox(height: 20),
-                        _buildSearchField(searchController),
+                        _buildSearchField(searchController, focusNode),
                       ],
                     ),
                   );
                 }),
                 const SizedBox(height: 20),
-                _buildSubjectList(dialogController, listofsubjectRepository),
+                _buildSubjectList(
+                    dialogController, listofsubjectRepository, focusNode),
                 const SizedBox(height: 20),
                 _buildSaveButton(dialogController, groupNameController),
               ],
@@ -141,7 +139,6 @@ class GroupDialog extends StatelessWidget {
     );
   }
 
-  // Метод для построения заголовка диалогового окна
   Widget _buildDialogTitle(GroupDialogPageController dialogController) {
     return Text(
       dialogController.groupId.value == null
@@ -151,7 +148,6 @@ class GroupDialog extends StatelessWidget {
     );
   }
 
-  // Метод для построения поля ввода имени группы
   Widget _buildGroupNameField(TextEditingController controller) {
     return TextField(
       decoration: _inputField("Название группы"),
@@ -160,19 +156,18 @@ class GroupDialog extends StatelessWidget {
     );
   }
 
-  // Метод для построения поля поиска предметов
-  Widget _buildSearchField(TextEditingController controller) {
+  Widget _buildSearchField(
+      TextEditingController controller, FocusNode focusNode) {
     return TextField(
+      focusNode: focusNode,
       decoration: _inputFieldWithIcon("Поиск предмета", Icons.search),
       controller: controller,
       style: inputDialogSemesters,
     );
   }
 
-  // Метод для построения списка предметов
-  // Метод для построения списка предметов
   Widget _buildSubjectList(GroupDialogPageController dialogController,
-      ListofsubjectRepository listOfSubjectRepository) {
+      ListofsubjectRepository listOfSubjectRepository, FocusNode focusNode) {
     return Container(
       height: 200,
       decoration: BoxDecoration(
@@ -196,8 +191,8 @@ class GroupDialog extends StatelessWidget {
           return ListView.builder(
             itemCount: dialogController.filteredSubjects.length,
             itemBuilder: (context, index) {
-              return _buildSubjectItem(
-                  dialogController, listOfSubjectRepository, index, context);
+              return _buildSubjectItem(dialogController,
+                  listOfSubjectRepository, index, context, focusNode);
             },
           );
         }
@@ -205,23 +200,20 @@ class GroupDialog extends StatelessWidget {
     );
   }
 
-// Метод для построения элемента списка предметов
-  // Метод для построения элемента списка предметов
   Widget _buildSubjectItem(
       GroupDialogPageController dialogController,
       ListofsubjectRepository listOfSubjectRepository,
       int index,
-      BuildContext context) {
+      BuildContext context,
+      FocusNode focusNode) {
     final subject = dialogController.filteredSubjects[index];
     String semesterNumbers = '';
 
     if (dialogController.groupId.value != null) {
-      // Ищем все объекты ListOfSubject с соответствующим subjectId
       final matchingSubjects = dialogController.listOfSubjects
           .where((listSubj) => listSubj.subjectId == subject.id)
           .toList();
 
-      // Формируем строку с номерами семестров
       List<int> semestersForSubject = matchingSubjects
           .map((listSubj) => listSubj.semesterNumber)
           .where((semester) => semester != null)
@@ -263,7 +255,6 @@ class GroupDialog extends StatelessWidget {
                           .getListOfSubjectsBySubjectGroupId(
                               dialogController.groupId.value!, subject.id!);
 
-                  // Вызываем диалоговое окно с полученным списком предметов
                   List<int> selectedSemesters = await SemesterDialogPage.show(
                     context,
                     listOfSubjects, // Передаем полученный список предметов
@@ -274,27 +265,25 @@ class GroupDialog extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
-                    color: primary8Color, // Цвет фона
-                    borderRadius:
-                        BorderRadius.circular(15), // Закругленные углы
+                    color: primary8Color,
+                    borderRadius: BorderRadius.circular(15),
                   ),
                   child: TextField(
                     style: semestersDialogSemesters,
-
                     controller: TextEditingController(
                       text: semesterNumbers.isNotEmpty ? semesterNumbers : '',
                     ),
                     decoration: const InputDecoration(
                       border: InputBorder.none,
                     ),
-                    readOnly: true, // Поле только для чтения
+                    readOnly: true,
                     onTap: () async {
+                      focusNode.unfocus();
                       List<ListOfSubject> listOfSubjects =
                           await listOfSubjectRepository
                               .getListOfSubjectsBySubjectGroupId(
                                   dialogController.groupId.value!, subject.id!);
 
-                      // Вызываем диалоговое окно с полученным списком предметов
                       List<int> selectedSemesters =
                           await SemesterDialogPage.show(
                         context,
@@ -315,7 +304,6 @@ class GroupDialog extends StatelessWidget {
     );
   }
 
-  // Метод для построения кнопки сохранения
   Widget _buildSaveButton(GroupDialogPageController dialogController,
       TextEditingController groupNameController) {
     return SizedBox(
@@ -324,11 +312,37 @@ class GroupDialog extends StatelessWidget {
         style: _elevationButtonStyle(),
         onPressed: () async {
           try {
-            if (dialogController.groupId.value == null) {
-              await dialogController.createNewGroup(
-                groupName: groupNameController.text.trim(),
+            if (groupNameController.text.isEmpty) {
+              Get.snackbar(
+                "Ошибка",
+                "Пожалуйста, введите название группы",
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color.fromRGBO(244, 67, 54, 70),
+                colorText: Colors.white,
               );
-              await checkSemesters(dialogController);
+              return;
+            }
+            if (dialogController.groupId.value == null) {
+              if (dialogController.startYear.value == null ||
+                  dialogController.endYear.value == null) {
+                Get.snackbar(
+                  "Ошибка",
+                  "Пожалуйста, введите года начала и окончания",
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: const Color.fromRGBO(244, 67, 54, 70),
+                  colorText: Colors.white,
+                );
+                return;
+              } else {
+                // log(groupNameController.text.toString());
+
+                await dialogController.createNewGroup(
+                  groupName: groupNameController.text.trim(),
+                );
+                await checkSemesters(dialogController);
+                dialogController.startYear.value = null;
+                dialogController.endYear.value = null;
+              }
             } else {
               await dialogController.editGroup(
                 id: dialogController.groupId.value!,
@@ -337,9 +351,8 @@ class GroupDialog extends StatelessWidget {
             }
             Get.close(1);
           } catch (e) {
+            log(e.toString());
             throw Error();
-          } finally {
-            Get.back();
           }
         },
         child: const Text(
@@ -350,7 +363,6 @@ class GroupDialog extends StatelessWidget {
     );
   }
 
-  // Стиль для кнопки
   ButtonStyle _elevationButtonStyle() {
     return ButtonStyle(
       backgroundColor: WidgetStateProperty.all<Color>(
@@ -364,7 +376,6 @@ class GroupDialog extends StatelessWidget {
     );
   }
 
-  // Поле ввода без иконки
   InputDecoration _inputField(String labelText) {
     return InputDecoration(
       labelText: labelText,
@@ -377,7 +388,6 @@ class GroupDialog extends StatelessWidget {
     );
   }
 
-  // Поле ввода с иконкой
   InputDecoration _inputFieldWithIcon(String labelText, IconData icon) {
     return InputDecoration(
       labelText: labelText,
@@ -393,12 +403,12 @@ class GroupDialog extends StatelessWidget {
 
   Future<void> checkSemesters(
       GroupDialogPageController dialogController) async {
-    for (int year = dialogController.startYear.value.value!;
-        year <= dialogController.endYear.value.value!;
+    for (int year = dialogController.startYear.value!;
+        year <= dialogController.endYear.value!;
         year++) {
       for (int semesterPart = 1; semesterPart <= 2; semesterPart++) {
         int semesterNumber =
-            (year - dialogController.startYear.value.value!) * 2 + semesterPart;
+            (year - dialogController.startYear.value!) * 2 + semesterPart;
 
         bool exists = await dialogController.semesterRepository.isSemesterExist(
           semesterNumber: semesterNumber,

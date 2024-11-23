@@ -67,7 +67,7 @@ class AbsencePageController extends GetxController {
       students.assignAll(loadedStudents); // Обновляем список студентов
       isLoading(false);
     } catch (e) {
-      print("Ошибка загрузки студентов: $e");
+      log("Ошибка загрузки студентов: $e");
     }
   }
 
@@ -95,7 +95,7 @@ class AbsencePageController extends GetxController {
       absences.assignAll(loadedAbsences); // Обновляем список пропусков
       isLoading(false);
     } catch (e) {
-      print("Ошибка загрузки пропусков: $e");
+      log("Ошибка загрузки пропусков: $e");
       isLoading(false);
     }
   }

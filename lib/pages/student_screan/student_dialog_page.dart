@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:education_analizer/controlles/student_dialog_page_controller.dart';
 import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
@@ -32,28 +34,28 @@ class StudentDialog extends StatelessWidget {
                   style: semestDialogMainTextStyle,
                 ),
                 const SizedBox(height: 10),
-
-                // Объединение полей ФИО в одну строку
                 Row(
                   children: [
                     Expanded(
-                      child: _buildTextField(controller.middleName, 'Фамилия'),
+                      child: _buildTextField(
+                          controller.middleName, 'Фамилия', TextInputType.text),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _buildTextField(controller.firstName, 'Имя'),
+                      child: _buildTextField(
+                          controller.firstName, 'Имя', TextInputType.text),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _buildTextField(controller.lastName, 'Отчество'),
+                      child: _buildTextField(
+                          controller.lastName, 'Отчество', TextInputType.text),
                     ),
                   ],
                 ),
                 const SizedBox(height: 5),
-                _buildTextField(controller.telNumber, 'Телефон'),
+                _buildTextField(
+                    controller.telNumber, 'Телефон', TextInputType.phone),
                 const SizedBox(height: 5),
-
-                // Поля для выбора даты и группы на одной линии
                 Row(
                   children: [
                     Expanded(
@@ -70,7 +72,6 @@ class StudentDialog extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 5),
-
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -80,9 +81,31 @@ class StudentDialog extends StatelessWidget {
                       ),
                     ),
                     onPressed: () async {
-                      // Сохраняем студента
-                      await controller.saveStudent();
-                      Get.back(result: true);
+                      if (await _validateFields()) {
+                        try {
+                          await controller.saveStudent();
+
+                          Get.back(result: true);
+                        } catch (e) {
+                          Get.snackbar(
+                            "Ошибка",
+                            "Произошла ошибка при сохранении данных.",
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor:
+                                const Color.fromRGBO(244, 67, 54, 70),
+                            colorText: Colors.white,
+                          );
+                        }
+                      } else {
+                        Get.snackbar(
+                          "Ошибка",
+                          "Пожалуйста, заполните все обязательные поля.",
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor:
+                              const Color.fromRGBO(244, 67, 54, 70),
+                          colorText: Colors.white,
+                        );
+                      }
                     },
                     child: const Text(
                       'Сохранить',
@@ -98,9 +121,11 @@ class StudentDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(RxString textObservable, String label) {
+  Widget _buildTextField(
+      RxString textObservable, String label, TextInputType inputType) {
     return Obx(() {
       return TextField(
+        keyboardType: inputType,
         style: inputDialogSemesters,
         onChanged: (value) => textObservable.value = value,
         decoration: InputDecoration(
@@ -118,6 +143,26 @@ class StudentDialog extends StatelessWidget {
               TextPosition(offset: textObservable.value.length)),
       );
     });
+  }
+
+  // Метод для проверки обязательных полей
+  Future<bool> _validateFields() async {
+    if (controller.middleName.value.isEmpty) {
+      return false; // Фамилия не заполнена
+    }
+    if (controller.firstName.value.isEmpty) {
+      return false; // Имя не заполнено
+    }
+    if (controller.lastName.value.isEmpty) {
+      return false; // Отчество не заполнено
+    }
+    if (controller.telNumber.value.isEmpty) {
+      return false; // Телефон не заполнен
+    }
+    if (controller.groupId.value == null) {
+      return false; // Группа не выбрана
+    }
+    return true; // Все поля заполнены
   }
 
   Widget _buildDateField(String formattedDate, BuildContext context) {
@@ -140,6 +185,7 @@ class StudentDialog extends StatelessWidget {
           onPressed: () async {
             DateTime? selectedDate = await showDatePicker(
               context: context,
+              locale: const Locale("ru", "RU"),
               initialDate: controller.dateBirthday.value,
               firstDate: DateTime(1900),
               lastDate: DateTime.now(),

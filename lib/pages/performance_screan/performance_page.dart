@@ -17,16 +17,25 @@ class PerformancePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     PerformancePageController controller = Get.find();
-    return Scaffold(
-      backgroundColor: primaryColor,
-      appBar: CustomAppBar(role: controller.authController.role.value),
-      drawer: CustomDrawer(role: controller.authController.role.value),
-      body: Center(
-        child: Column(
-          children: [
-            _firstPlace(controller),
-            _secondPlace(controller),
-          ],
+    return WillPopScope(
+      onWillPop: () async {
+        Get.offAllNamed("/home");
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: primaryColor,
+        appBar: CustomAppBar(role: controller.authController.role.value),
+        drawer: CustomDrawer(role: controller.authController.role.value),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                _firstPlace(controller),
+                _secondPlace(controller),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -115,11 +124,7 @@ Widget _groupSelector(PerformancePageController controller) {
               child: Text(
                 displayText,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 1, 1, 1),
-                ),
+                style: preferTextStyle,
               ),
             ),
           ),
@@ -157,11 +162,7 @@ Widget _subjectSelector(PerformancePageController controller) {
           child: const Text(
             "Нет предметов",
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color.fromARGB(255, 1, 1, 1),
-            ),
+            style: preferTextStyle,
           ),
         );
       }
@@ -220,11 +221,7 @@ Widget _subjectSelector(PerformancePageController controller) {
                 child: Text(
                   displayText,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 1, 1, 1),
-                  ),
+                  style: preferTextStyle,
                 ),
               ),
             ),
@@ -233,7 +230,6 @@ Widget _subjectSelector(PerformancePageController controller) {
           _buildArrowButton(
             icon: Icons.keyboard_arrow_right,
             onPressed: () {
-              // Логика выбора следующего предмета
               if (selectedSubjectId != null) {
                 int currentIndex = subjectList
                     .indexWhere((subject) => subject.id == selectedSubjectId);
@@ -242,7 +238,6 @@ Widget _subjectSelector(PerformancePageController controller) {
                       .setSelectedSubject(subjectList[currentIndex + 1].id!);
                 }
               } else if (subjectList.isNotEmpty) {
-                // Если ничего не выбрано, выбираем первый предмет
                 controller.selectedSubjectId.value = subjectList.first.id!;
               }
             },
@@ -258,8 +253,6 @@ Widget _semesterSelector(PerformancePageController controller) {
     () {
       var semesterList = controller.semesters;
       int? selectedSemesterId = controller.selectedSemesterId.value;
-
-      // Получаем текст для отображения
       String displayText = selectedSemesterId != null
           ? semesterList
               .firstWhere(
@@ -272,22 +265,6 @@ Widget _semesterSelector(PerformancePageController controller) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // // Левая кнопка-стрелка для выбора предыдущего семестра
-          // _buildArrowButton(
-          //   icon: Icons.keyboard_arrow_left,
-          //   onPressed: () {
-          //     int currentIndex = semesterList
-          //         .indexWhere((semester) => semester.id == selectedSemesterId);
-          //     if (currentIndex > 0) {
-          //       // Выбираем предыдущий семестр
-          //       controller
-          //           .setSelectedSemester(semesterList[currentIndex - 1].id!);
-          //     }
-          //   },
-          // ),
-          // const SizedBox(width: 8),
-
-          // Центральная область для отображения выбранного семестра
           Expanded(
             child: GestureDetector(
               onTap: () {
@@ -317,27 +294,14 @@ Widget _semesterSelector(PerformancePageController controller) {
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 1, 1, 1),
+                    fontFamily: "Rubik",
+                    color: primary6Color,
                   ),
                 ),
               ),
             ),
           ),
           const SizedBox(width: 8),
-
-          // // Правая кнопка-стрелка для выбора следующего семестра
-          // _buildArrowButton(
-          //   icon: Icons.keyboard_arrow_right,
-          //   onPressed: () {
-          //     int currentIndex = semesterList
-          //         .indexWhere((semester) => semester.id == selectedSemesterId);
-          //     if (currentIndex < semesterList.length - 1) {
-          //       // Выбираем следующий семестр
-          //       controller
-          //           .setSelectedSemester(semesterList[currentIndex + 1].id!);
-          //     }
-          //   },
-          // ),
           Expanded(
             child: _buildDatePicker(controller, Get.context!),
           ),
@@ -357,7 +321,10 @@ Widget _buildArrowButton(
       shape: BoxShape.circle,
     ),
     child: IconButton(
-      icon: Icon(icon, color: Colors.black),
+      icon: Icon(
+        icon,
+        color: primary6Color,
+      ),
       onPressed: onPressed,
     ),
   );
@@ -411,7 +378,7 @@ Widget _secondPlace(PerformancePageController controller) {
         maxWidth: 700,
       ),
       child: Container(
-        margin: const EdgeInsets.all(8),
+        margin: const EdgeInsets.symmetric(vertical: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -444,6 +411,15 @@ Widget _secondPlace(PerformancePageController controller) {
               ),
             );
           }
+          if (!controller.isSemesterExist.value) {
+            return const Center(
+              child: Text(
+                'Выбранного семестра не существует',
+                textAlign: TextAlign.center,
+                style: semestDialogMainTextStyle,
+              ),
+            );
+          }
 
           final selectedGroup = controller.groups.firstWhere(
             (group) => group.id == controller.selectedGroupId.value,
@@ -454,7 +430,12 @@ Widget _secondPlace(PerformancePageController controller) {
               Text(
                 'Список учащихся группы: ${selectedGroup.groupName}',
                 textAlign: TextAlign.center,
-                style: semestDialogMainTextStyle,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: "Rubik",
+                  color: primary6Color,
+                ),
               ),
               const SizedBox(height: 10),
               Expanded(
@@ -474,12 +455,8 @@ Widget _secondPlace(PerformancePageController controller) {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "${student.middleName ?? ''} ${student.firstName ?? ''} ${student.lastName ?? ''}",
+                              "${student.middleName ?? ''} ${student.firstName.toString()[0] ?? ''}. ${student.lastName.toString()[0] ?? ''}.",
                               style: subjectMainTextDialogSemesters,
-                            ),
-                            const Text(
-                              "Средний балл, хз для чего",
-                              style: shortSubName,
                             ),
                           ],
                         ),
@@ -599,23 +576,27 @@ Widget _secondPlace(PerformancePageController controller) {
   );
 }
 
-// Функция для построения виджета выбора даты
 Widget _buildDatePicker(
     PerformancePageController controller, BuildContext context) {
   return Obx(() {
-    // Создаем TextEditingController вне виджета Obx, чтобы избежать повторной инициализации
     final TextEditingController textEditingController = TextEditingController(
       text: controller.year.value?.year.toString() ?? "",
     );
 
     return TextField(
-      readOnly: true, // Поле только для чтения
+      readOnly: true,
       decoration: InputDecoration(
         filled: true,
+        labelStyle: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+          fontFamily: "Rubik",
+          color: primary6Color,
+        ),
         fillColor: primaryColor,
-        labelText: 'Выберите год', // Текст метки
+        labelText: 'Год',
         suffixIcon: IconButton(
-            icon: const Icon(Icons.calendar_today), // Иконка выбора даты
+            icon: const Icon(Icons.calendar_today),
             onPressed: () {
               if (controller.selectedSemesterId.value != null) {
                 _selectDate(controller, context);
@@ -625,12 +606,11 @@ Widget _buildDatePicker(
           borderRadius: BorderRadius.circular(12),
         ),
       ),
-      controller: textEditingController, // Привязываем контроллер текста
+      controller: textEditingController,
     );
   });
 }
 
-// Функция для показа диалога выбора даты
 Future<void> _selectDate(
     PerformancePageController controller, BuildContext context) async {
   DateTime? selectedDate = DateTime.now(); // Начальная дата - текущая

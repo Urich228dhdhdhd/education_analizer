@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:dio/dio.dart';
+import 'package:education_analizer/model/group.dart';
 import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
 
@@ -32,6 +33,36 @@ class GroupRepository extends GetxService {
     }
   }
 
+// Получение групп по роли
+  Future<List<Group>> getGroupByRole2({
+    required int id,
+    required String role,
+  }) async {
+    try {
+      final response = await dio.post(
+        "$url/by-role2",
+        data: {
+          "curator_id": id,
+          "role": role,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Преобразуем данные в список объектов Group
+        List<Group> groups = (response.data as List)
+            .map((item) => Group.fromJson(item))
+            .toList();
+        // log(groups.toString());
+        return groups;
+      } else {
+        throw Exception('Ошибка при получении групп: ${response.statusCode}');
+      }
+    } catch (e) {
+      log('Ошибка: $e');
+      throw Exception('Не удалось выполнить запрос');
+    }
+  }
+
   // Создание новой группы
   Future<Map<String, dynamic>> createGroup({
     required String groupName,
@@ -53,11 +84,11 @@ class GroupRepository extends GetxService {
       if (response.statusCode == 201) {
         return Map<String, dynamic>.from(response.data);
       } else {
-        throw Exception('Ошибка при создании группы: ${response.statusCode}');
+        throw Exception(response.data['message'] ?? 'Ощибка создания');
       }
-    } catch (e) {
-      log('Ошибка: $e');
-      throw Exception('Не удалось выполнить запрос');
+    } on DioException catch (e) {
+      log(e.toString());
+      throw Exception(e.response?.data['message'] ?? 'Ошибка при авторизации');
     }
   }
 

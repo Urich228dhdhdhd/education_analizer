@@ -13,9 +13,9 @@ class SubjectDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     // Контроллеры для полей ввода
     final shortNameController =
-        TextEditingController(text: controller.subjectNameShort);
+        TextEditingController(text: controller.subjectNameShort.value);
     final longNameController =
-        TextEditingController(text: controller.subjectNameLong);
+        TextEditingController(text: controller.subjectNameLong.value);
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -74,8 +74,10 @@ class SubjectDialog extends StatelessWidget {
                       ),
                     ),
                     onPressed: () async {
-                      controller.subjectNameShort = shortNameController.text;
-                      controller.subjectNameLong = longNameController.text;
+                      controller.subjectNameShort.value =
+                          shortNameController.text;
+                      controller.subjectNameLong.value =
+                          longNameController.text;
 
                       await controller.saveSubject();
                       Get.back(

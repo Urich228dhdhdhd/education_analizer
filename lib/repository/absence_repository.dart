@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:education_analizer/model/absence.dart';
+import 'package:education_analizer/model/group_absence_report.dart';
 import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
 
@@ -105,6 +106,48 @@ class AbsenceRepository extends GetxService {
     } catch (e) {
       print('Ошибка при удалении записи пропуска: $e');
       rethrow;
+    }
+  }
+
+  Future<List<GroupAbsenceReport>> getAbsenceReport({
+    required List<int> groupIds,
+    required int year,
+    required int month,
+    required List<String> absenceTypes,
+  }) async {
+    try {
+      // log("getAbsenceReport: $groupIds $year $month $absenceTypes");
+
+      final response = await dio.post(
+        '$url/report',
+        data: {
+          'selectedGroups': groupIds,
+          'selectedMonth': month,
+          'selectedYear': year,
+          'selectedAbsenceTypes': absenceTypes,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Преобразование JSON-ответа в список объектов GroupAbsenceReport
+        List<dynamic> responseData = response.data;
+
+        // Преобразуем JSON в список объектов
+        List<GroupAbsenceReport> reports = responseData
+            .map((json) => GroupAbsenceReport.fromJson(json))
+            .toList();
+
+        // Логирование преобразованных объектов
+        // Явное преобразование в строку с использованием toString()
+        log("Полученные отчеты: ${reports.map((report) => report.toString()).join(', ')}");
+
+        return reports;
+      } else {
+        throw Exception('Ошибка при получении отчета: ${response.statusCode}');
+      }
+    } catch (e) {
+      log('Ошибка при получении отчета: $e');
+      throw Exception('Не удалось получить отчет о пропусках');
     }
   }
 }

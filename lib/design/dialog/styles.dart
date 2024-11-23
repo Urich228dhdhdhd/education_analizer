@@ -15,6 +15,7 @@ const TextStyle buttonAuthorizationTextStyle = TextStyle(
   color: primary5Color,
 );
 const TextStyle linkAuthorizationTextStyle = TextStyle(
+  decoration: TextDecoration.none,
   fontSize: 16,
   fontWeight: FontWeight.w700,
   fontFamily: "Rubik",
@@ -110,4 +111,17 @@ const TextStyle buttonSubjectDialogTextStyle = TextStyle(
   fontWeight: FontWeight.normal,
   fontFamily: "Rubik",
   color: primary5Color,
+);
+
+const TextStyle preferTextStyle = TextStyle(
+  fontSize: 18,
+  fontWeight: FontWeight.bold,
+  fontFamily: "Rubik",
+  color: primary6Color,
+);
+const TextStyle absenceSubTitle = TextStyle(
+  fontSize: 14,
+  fontWeight: FontWeight.w400,
+  fontFamily: "Rubik",
+  color: primary6Color,
 );

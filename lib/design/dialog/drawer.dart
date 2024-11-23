@@ -5,7 +5,7 @@ import 'package:education_analizer/design/widgets/images.dart';
 import 'package:get/get.dart';
 
 class CustomDrawer extends StatelessWidget {
-  final String role; // Параметр для передачи роли
+  final String role;
 
   const CustomDrawer({super.key, required this.role});
 
@@ -17,14 +17,14 @@ class CustomDrawer extends StatelessWidget {
         children: <Widget>[
           DrawerHeader(
             decoration: const BoxDecoration(
-              color: primary7Color, // Цвет фона заголовка
+              color: primary7Color,
             ),
             child: Image.asset("lib/images/college_image.png"),
           ),
           ListTile(
             leading: SizedBox(
-              height: 25, // Высота иконки
-              width: 25, // Ширина иконки
+              height: 25,
+              width: 25,
               child: homeImage,
             ),
             title: const Text(
@@ -63,20 +63,22 @@ class CustomDrawer extends StatelessWidget {
               Get.toNamed("/student");
             },
           ),
-          ListTile(
-            leading: SizedBox(
-              height: 25,
-              width: 25,
-              child: subjectImage,
+          if (role == 'ADMINISTRATOR') ...[
+            ListTile(
+              leading: SizedBox(
+                height: 25,
+                width: 25,
+                child: subjectImage,
+              ),
+              title: const Text(
+                'Предметы',
+                style: styleDrawer,
+              ),
+              onTap: () {
+                Get.toNamed("/subject");
+              },
             ),
-            title: const Text(
-              'Предметы',
-              style: styleDrawer,
-            ),
-            onTap: () {
-              Get.toNamed("/subject");
-            },
-          ),
+          ],
           ListTile(
             leading: SizedBox(
               height: 25,
@@ -116,10 +118,9 @@ class CustomDrawer extends StatelessWidget {
               style: styleDrawer,
             ),
             onTap: () {
-              Navigator.pop(context);
+              Get.toNamed("/report");
             },
           ),
-          // Пункты меню в зависимости от роли
           if (role == 'ADMINISTRATOR') ...[
             ListTile(
               leading: SizedBox(
@@ -161,7 +162,7 @@ class CustomDrawer extends StatelessWidget {
               style: styleDrawer,
             ),
             onTap: () {
-              Navigator.pop(context);
+              Get.toNamed("/login");
             },
           ),
         ],

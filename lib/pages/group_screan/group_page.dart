@@ -14,93 +14,68 @@ class GroupPage extends StatelessWidget {
   Widget build(BuildContext context) {
     GroupPageController groupPageController = Get.find();
 
-    String selectedFilter = 'По номеру';
-    List<String> filterOptions = [
-      'По номеру',
-      'По названию',
-      'По количеству студентов'
-    ];
-
-    return Scaffold(
-      backgroundColor: primaryColor,
-      appBar: CustomAppBar(role: groupPageController.authController.role.value),
-      drawer: CustomDrawer(role: groupPageController.authController.role.value),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _dropContainer(selectedFilter, filterOptions),
-                  FloatingActionButton(
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return const GroupDialog();
-                          });
-                    },
-                    backgroundColor: primary6Color,
-                    child: const Icon(Icons.add, color: Colors.white),
-                  ),
-                ],
+    return WillPopScope(
+      onWillPop: () async {
+        Get.offAllNamed("/home");
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: primaryColor,
+        appBar:
+            CustomAppBar(role: groupPageController.authController.role.value),
+        drawer:
+            CustomDrawer(role: groupPageController.authController.role.value),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Visibility(
+                      visible: groupPageController.authController.role.value ==
+                          "ADMINISTRATOR",
+                      child: FloatingActionButton(
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return const GroupDialog();
+                              });
+                        },
+                        backgroundColor: primary6Color,
+                        child: const Icon(Icons.add, color: Colors.white),
+                      ),
+                    )
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: SizedBox(
-                width: 300,
-                child: Obx(() {
-                  return ListView.builder(
-                    itemCount: groupPageController.groups.length,
-                    itemBuilder: (context, index) {
-                      Map<String, dynamic> group =
-                          groupPageController.groups[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: GroupCard(
-                          groupId: group['id'],
-                          groupName: group['group_name'],
-                          studentCount: group['student_count'],
-                        ),
-                      );
-                    },
-                  );
-                }),
+              Expanded(
+                child: SizedBox(
+                  width: 300,
+                  child: Obx(() {
+                    return ListView.builder(
+                      itemCount: groupPageController.groups.length,
+                      itemBuilder: (context, index) {
+                        Map<String, dynamic> group =
+                            groupPageController.groups[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: GroupCard(
+                            groupId: group['id'],
+                            groupName: group['group_name'],
+                            studentCount: group['student_count'],
+                          ),
+                        );
+                      },
+                    );
+                  }),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Container _dropContainer(String selectedFilter, List<String> filterOptions) {
-    return Container(
-      width: 180,
-      decoration: BoxDecoration(
-        color: primary6Color,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-      child: DropdownButton<String>(
-        value: selectedFilter,
-        isExpanded: true,
-        icon: const Icon(Icons.arrow_downward, color: Colors.white),
-        style: dropdownButtonTextStyle,
-        dropdownColor: primary6Color,
-        underline: Container(),
-        items: filterOptions.map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value, style: dropdownButtonTextStyle),
-          );
-        }).toList(),
-        onChanged: (newValue) {
-          selectedFilter = newValue!;
-          // Можно добавить логику фильтрации здесь
-        },
       ),
     );
   }
@@ -162,7 +137,7 @@ class GroupCard extends StatelessWidget {
               child: IconButton(
                 padding: EdgeInsets.zero,
                 icon: const Icon(Icons.more_vert, size: 20),
-                onPressed: () {
+                onPressed: () async {
                   showDialog(
                       context: context,
                       builder: (BuildContext context) {

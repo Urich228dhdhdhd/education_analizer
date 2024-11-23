@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +28,7 @@ class AbsenceDialog extends StatelessWidget {
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
           labelText: label,
-          labelStyle: styleDrawer,
+          labelStyle: preferTextStyle,
           hintText: hint,
           filled: true,
           fillColor: primary8Color,
@@ -44,11 +43,11 @@ class AbsenceDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Obx(() {
-        final studentName =
-            "${absenceDialogController.student.value?.middleName ?? ''} ${absenceDialogController.student.value?.firstName ?? ''}";
         return Column(
           children: [
-            Text(style: semestDialogMainTextStyle, 'Учащийся: $studentName'),
+            Text(
+                style: semestDialogMainTextStyle,
+                'Учащийся: ${absenceDialogController.student.value!.middleName} ${absenceDialogController.student.value!.firstName.toString()[0]}. ${absenceDialogController.student.value!.lastName.toString()[0]}.'),
             Text(
                 style: semestDialogMainTextStyle,
                 '${absenceDialogController.year.value}.${absenceDialogController.month.value}'),

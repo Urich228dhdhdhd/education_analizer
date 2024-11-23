@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
@@ -36,10 +38,13 @@ class SubjectRepository extends GetxService {
         'subject_name_short': subjectNameShort,
         'subject_name_long': subjectNameLong,
       });
-      return response.data; // Возвращаем созданный предмет
-    } catch (e) {
-      print("Ошибка при создании предмета: $e");
-      throw Exception('Ошибка при создании предмета');
+      if (response.statusCode == 201) {
+        return response.data;
+      } else {
+        throw Exception(response.data['message'] ?? 'Ошибка авторизации');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Ошибка при авторизации');
     }
   }
 
@@ -61,10 +66,13 @@ class SubjectRepository extends GetxService {
         'subject_name_short': subjectNameShort,
         'subject_name_long': subjectNameLong,
       });
-      return response.data; // Возвращаем обновленный предмет
-    } catch (e) {
-      print("Ошибка при обновлении предмета с ID $id: $e");
-      throw Exception('Ошибка при обновлении предмета');
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        throw Exception(response.data['message'] ?? 'Ошибка авторизации');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Ошибка при авторизации');
     }
   }
 }

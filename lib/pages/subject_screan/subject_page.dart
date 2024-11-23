@@ -16,15 +16,21 @@ class SubjectPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SubjectPageController subjectPageController = Get.find();
+    FocusNode focusNode = FocusNode();
 
-    return Scaffold(
-      backgroundColor: primaryColor,
-      appBar:
-          CustomAppBar(role: subjectPageController.authController.role.value),
-      drawer:
-          CustomDrawer(role: subjectPageController.authController.role.value),
-      body: SingleChildScrollView(
-        child: Padding(
+    return WillPopScope(
+      onWillPop: () async {
+        Get.offAllNamed("/home");
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: primaryColor,
+        resizeToAvoidBottomInset: false,
+        appBar:
+            CustomAppBar(role: subjectPageController.authController.role.value),
+        drawer:
+            CustomDrawer(role: subjectPageController.authController.role.value),
+        body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -37,12 +43,12 @@ class SubjectPage extends StatelessWidget {
                     backgroundColor: primary6Color,
                     child: const Icon(Icons.add, color: Colors.white),
                     onPressed: () {
+                      focusNode.unfocus();
                       final dialogController = SubjectDialogController(
                           subjectPageController: subjectPageController);
                       Get.dialog(SubjectDialog(controller: dialogController))
                           .then((result) {
                         if (result == true) {
-                          // Обновить состояние, если предмет был изменен
                           subjectPageController
                               .fetchSubjects(); // Обновляем список предметов
                         }
@@ -51,7 +57,6 @@ class SubjectPage extends StatelessWidget {
                   ),
                 ),
               ),
-              // Ограничиваем ширину контейнера
               ConstrainedBox(
                 constraints: const BoxConstraints(
                   minWidth: 400,
@@ -83,6 +88,7 @@ class SubjectPage extends StatelessWidget {
                       const SizedBox(height: 15),
                       TextField(
                         style: inputDialogSemesters,
+                        focusNode: focusNode,
                         decoration: InputDecoration(
                           labelText: "Поиск предмета",
                           labelStyle: styleDrawer,
@@ -140,6 +146,7 @@ class SubjectPage extends StatelessWidget {
                                       IconButton(
                                         icon: const Icon(Icons.edit),
                                         onPressed: () {
+                                          focusNode.unfocus();
                                           final dialogController =
                                               SubjectDialogController(
                                                   subjectPageController:
@@ -163,6 +170,7 @@ class SubjectPage extends StatelessWidget {
                                       IconButton(
                                         icon: const Icon(Icons.delete),
                                         onPressed: () async {
+                                          focusNode.unfocus();
                                           showDialog(
                                             context: context,
                                             builder: (context) {

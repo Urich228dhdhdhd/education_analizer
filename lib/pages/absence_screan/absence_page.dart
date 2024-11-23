@@ -1,8 +1,8 @@
-import 'dart:developer';
 import 'package:education_analizer/controlles/absence_dialog_controller.dart';
 import 'package:education_analizer/controlles/absence_page_controller.dart';
 import 'package:education_analizer/design/dialog/app_bar.dart';
 import 'package:education_analizer/design/dialog/drawer.dart';
+import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
 import 'package:education_analizer/design/widgets/dimentions.dart';
 import 'package:education_analizer/pages/absence_screan/absence_dialog.dart';
@@ -17,31 +17,36 @@ class AbsencePage extends StatelessWidget {
   Widget build(BuildContext context) {
     AbsencePageController absencePageController = Get.find();
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: primaryColor,
-      appBar: CustomAppBar(
-        role: absencePageController.authController.role.value,
-      ),
-      drawer: CustomDrawer(
-        role: absencePageController.authController.role.value,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Center(
-          child: Column(
-            children: [
-              _buildGroupAndDateSelection(absencePageController, context),
-              const SizedBox(height: 16),
-              _buildContentField(absencePageController),
-            ],
+    return WillPopScope(
+      onWillPop: () async {
+        Get.offAllNamed("/home");
+        return false;
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: primaryColor,
+        appBar: CustomAppBar(
+          role: absencePageController.authController.role.value,
+        ),
+        drawer: CustomDrawer(
+          role: absencePageController.authController.role.value,
+        ),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Center(
+            child: Column(
+              children: [
+                _buildGroupAndDateSelection(absencePageController, context),
+                const SizedBox(height: 16),
+                _buildContentField(absencePageController),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // Функция для выбора группы и даты
   Widget _buildGroupAndDateSelection(
       AbsencePageController controller, BuildContext context) {
     return ConstrainedBox(
@@ -76,7 +81,6 @@ class AbsencePage extends StatelessWidget {
     );
   }
 
-  // Функция для выбора группы
   Widget _buildGroupSelector(
       AbsencePageController controller, BuildContext context) {
     return Obx(() {
@@ -131,8 +135,8 @@ class AbsencePage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
         decoration: BoxDecoration(
           color: primary8Color,
-          border: Border.all(color: Colors.black), // Задаёт цвет рамки
-          borderRadius: BorderRadius.circular(12), // Скругление углов
+          border: Border.all(color: Colors.black),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
           textAlign: TextAlign.center,
@@ -142,11 +146,7 @@ class AbsencePage extends StatelessWidget {
                   .firstWhere((group) => group.id == selectedGroupId)
                   .groupName
                   .toString(),
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color.fromARGB(255, 1, 1, 1),
-          ),
+          style: preferTextStyle,
         ),
       ),
     );
@@ -203,6 +203,7 @@ class AbsencePage extends StatelessWidget {
           filled: true,
           fillColor: primary8Color,
           labelText: 'Выберите месяц',
+          labelStyle: preferTextStyle,
           suffixIcon: IconButton(
             icon: const Icon(Icons.calendar_today),
             onPressed: () => _selectDate(controller, context),
@@ -219,28 +220,45 @@ class AbsencePage extends StatelessWidget {
     });
   }
 
-  // Функция для показа диалога выбора даты
   Future<void> _selectDate(
       AbsencePageController controller, BuildContext context) async {
     DateTime? result = await showDialog<DateTime>(
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          child: dp.MonthPicker.single(
-            selectedDate: controller.dateTime.value,
-            onChanged: (DateTime dateTime) {
-              Navigator.pop(context, dateTime);
-            },
-            firstDate: DateTime(DateTime.now().year - 100),
-            lastDate: DateTime(DateTime.now().year + 100),
-            datePickerStyles: dp.DatePickerRangeStyles(
-              selectedDateStyle: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-              selectedSingleDateDecoration: const BoxDecoration(
-                color: primaryColor,
-                shape: BoxShape.circle,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16), // Закругленные углы
+          ),
+          backgroundColor: Colors.white, // Цвет фона диалога
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: dp.MonthPicker.single(
+              selectedDate: controller.dateTime.value,
+              onChanged: (DateTime dateTime) {
+                Navigator.pop(context, dateTime);
+              },
+              firstDate: DateTime(DateTime.now().year - 5),
+              lastDate: DateTime(DateTime.now().year + 5),
+              datePickerStyles: dp.DatePickerRangeStyles(
+                selectedDateStyle: const TextStyle(
+                  color: primary6Color,
+                  fontWeight: FontWeight.bold,
+                ),
+                selectedSingleDateDecoration: const BoxDecoration(
+                  color: primaryColor,
+                  shape: BoxShape.circle,
+                ),
+                defaultDateTextStyle: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                ),
+                disabledDateStyle: const TextStyle(
+                  color: Colors.grey, // Стиль для неактивных дат
+                ),
+                currentDateStyle: const TextStyle(
+                  color: primaryColor, // Цвет для текущей даты
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -278,71 +296,62 @@ class AbsencePage extends StatelessWidget {
           child: Obx(() {
             if (controller.isLoading.value) {
               return const Center(
-                child: CircularProgressIndicator(), // Индикатор загрузки
+                child: CircularProgressIndicator(),
               );
             }
 
             if (controller.students.isEmpty) {
               return const Center(
                 child: Text(
-                  'Студенты не загружены',
-                  style: TextStyle(fontSize: 16),
+                  'Студенты не найдены',
+                  style: semestDialogMainTextStyle,
                 ),
               );
             }
 
-            // Отображаем список студентов
             return ListView.builder(
               itemCount: controller.students.length,
               itemBuilder: (context, index) {
                 final student = controller.students[index];
                 return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 6, horizontal: 4), // Отступы между элементами
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: primary8Color, // Цвет фона
-                      borderRadius:
-                          BorderRadius.circular(12), // Скругление углов
+                      color: primary8Color,
+                      borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
                           blurRadius: 6,
-                          offset: const Offset(0, 3), // Смещение тени
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
                     child: ListTile(
                       title: Text(
-                        "${student.middleName!} ${student.firstName} ${student.lastName}",
-                        style:
-                            const TextStyle(color: Colors.black), // Цвет текста
+                        "${student.middleName!} ${student.firstName.toString()[0]}. ${student.lastName.toString()[0]}.",
+                        style: subjectMainTextDialogSemesters,
                       ),
                       subtitle: Obx(() {
                         final absenceEntry = controller.absences.firstWhere(
                           (absenceMap) => absenceMap[student.id!] != null,
-                          orElse: () => {
-                            student.id!: null
-                          }, // Возвращаем null, если нет пропусков
+                          orElse: () => {student.id!: null},
                         );
                         final absence = absenceEntry[student.id!];
 
                         if (absence != null) {
                           return Text(
-                            "Больничный лист:${absence.absenceIllness} Приказ:${absence.absenceOrder} Уважительная:${absence.absenceResp} Неуважительная:${absence.absenceDisresp}",
-                            style: const TextStyle(
-                                color:
-                                    Colors.black), // Цвет текста для пропусков
+                            "Бол:${absence.absenceIllness} Пр:${absence.absenceOrder} Уваж:${absence.absenceResp} Неуваж:${absence.absenceDisresp}",
+                            style: absenceSubTitle,
                           );
                         } else {
-                          return const Text(
-                              'Пропуски не отмечены'); // Если данных о пропусках нет
+                          return const Text('Пропуски не отмечены');
                         }
                       }),
                       trailing: IconButton(
                         icon: const Icon(Icons.edit),
                         onPressed: () async {
-                          // Проверяем, есть ли уже данные о пропусках для данного студента
                           final absence =
                               await controller.absenceRepository.checkAbsence(
                             student.id!,
@@ -351,7 +360,6 @@ class AbsencePage extends StatelessWidget {
                           );
                           AbsenceDialogController absenceDialogController =
                               Get.find();
-                          // Устанавливаем данные в контроллер для диалога
                           absenceDialogController.setAbsence(absence, student);
                           absenceDialogController.isEditMode.value =
                               absence != null;
@@ -360,17 +368,14 @@ class AbsencePage extends StatelessWidget {
                           absenceDialogController.month.value =
                               controller.dateTime.value.month;
 
-                          // Вызываем диалог
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AbsenceDialog(
-                                absenceDialogController:
-                                    absenceDialogController,
-                                absenceRepository: controller.absenceRepository,
-                              );
-                            },
-                          );
+                          Get.dialog(
+                            AbsenceDialog(
+                              absenceDialogController: absenceDialogController,
+                              absenceRepository: controller.absenceRepository,
+                            ),
+                          ).then((_) {
+                            controller.loadAbsences();
+                          });
                         },
                       ),
                     ),
@@ -384,7 +389,6 @@ class AbsencePage extends StatelessWidget {
     );
   }
 
-  // Функция для выбора предыдущей группы
   void _selectPreviousGroup(
       AbsencePageController controller, List groupList, int? selectedGroupId) {
     int currentIndex =
@@ -394,7 +398,6 @@ class AbsencePage extends StatelessWidget {
     }
   }
 
-  // Функция для выбора следующей группы
   void _selectNextGroup(
       AbsencePageController controller, List groupList, int? selectedGroupId) {
     int currentIndex =

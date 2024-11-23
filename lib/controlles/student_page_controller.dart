@@ -13,6 +13,7 @@ class StudentPageController extends GetxController {
 
   var students = <dynamic>[].obs;
   var groups = {}.obs;
+  var searchText = "".obs;
   var isLoading = false.obs;
 
   @override
@@ -27,6 +28,26 @@ class StudentPageController extends GetxController {
       required this.studentRepository,
       required this.authController});
 
+  List<dynamic> get filteredStudents {
+    if (searchText.isEmpty) {
+      return students;
+    } else {
+      return students.where((student) {
+        final firstName = student.firstName.toString().toLowerCase();
+        final middleName = student.middleName.toString().toLowerCase();
+        final lastName = student.lastName.toString().toLowerCase();
+        final groupName =
+            getGroupNameById(student.groupId)?.toLowerCase() ?? '';
+
+        final query = searchText.value.toLowerCase();
+        return firstName.contains(query) ||
+            middleName.contains(query) ||
+            lastName.contains(query) ||
+            groupName.contains(query);
+      }).toList();
+    }
+  }
+
   Future<void> fetchStudent() async {
     try {
       isLoading(true);
@@ -37,7 +58,7 @@ class StudentPageController extends GetxController {
       students.assignAll(fetchedStudents
           .map((studentJson) => Student.fromJson(studentJson))
           .toList());
-      log(students.toString());
+      // log(students.toString());
     } catch (error) {
       log("Ошибка при получении студентов: $error");
     } finally {

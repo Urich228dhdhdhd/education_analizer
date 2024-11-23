@@ -12,15 +12,13 @@ class MainPageController extends GetxController {
 
   MainPageController(this.groupRepository, {required this.authController});
 
-  // Метод для получения групп
   void findGroupsByRole() async {
     try {
-      int id = authController.id.value; // Получаем id пользователя
-      String role = authController.role.value; // Получаем роль пользователя
+      int id = authController.id.value;
+      String role = authController.role.value;
       var result = await groupRepository.getGroupByRole(id: id, role: role);
 
-      groups.value = result; // Обновляем список групп
-      log(groups.toString());
+      groups.value = result;
     } catch (e) {
       log('Ошибка при получении групп: $e');
     }

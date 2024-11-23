@@ -13,33 +13,45 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     MainPageController mainPageController = Get.find();
 
-    return Scaffold(
-      backgroundColor: primaryColor,
-      resizeToAvoidBottomInset: false,
-      appBar: CustomAppBar(role: mainPageController.authController.role.value),
-      drawer: CustomDrawer(role: mainPageController.authController.role.value),
-      body: SafeArea(
-        child: SizedBox(
-          height: 200,
-          child: Obx(() {
-            return ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: mainPageController.groups.length,
-              itemBuilder: (context, index) {
-                Map<String, dynamic> group = mainPageController.groups[index];
-                String groupName = group['group_name'];
-                int studentCount = group['student_count'];
+    return WillPopScope(
+      onWillPop: () async {
+        Get.offAllNamed("/login");
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: primaryColor,
+        resizeToAvoidBottomInset: false,
+        appBar:
+            CustomAppBar(role: mainPageController.authController.role.value),
+        drawer:
+            CustomDrawer(role: mainPageController.authController.role.value),
+        body: SafeArea(
+          child: SizedBox(
+            height: 200,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Obx(() {
+                return ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: mainPageController.groups.length,
+                  itemBuilder: (context, index) {
+                    Map<String, dynamic> group =
+                        mainPageController.groups[index];
+                    String groupName = group['group_name'];
+                    int studentCount = group['student_count'];
 
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: GroupCard(
-                    groupName: groupName,
-                    studentCount: studentCount,
-                  ),
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: GroupCard(
+                        groupName: groupName,
+                        studentCount: studentCount,
+                      ),
+                    );
+                  },
                 );
-              },
-            );
-          }),
+              }),
+            ),
+          ),
         ),
       ),
     );

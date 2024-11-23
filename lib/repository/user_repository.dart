@@ -57,15 +57,19 @@ class UserRepository extends GetxService {
   }
 
   Future<User> loginUser(String username, String password) async {
-    final response = await dio.post("$url/login", data: {
-      "username": username,
-      "password": password,
-    });
+    try {
+      final response = await dio.post("$url/login", data: {
+        "username": username,
+        "password": password,
+      });
 
-    if (response.statusCode == 200) {
-      return User.fromJson(response.data["user"]);
-    } else {
-      throw Exception();
+      if (response.statusCode == 200) {
+        return User.fromJson(response.data["user"]);
+      } else {
+        throw Exception(response.data['message'] ?? 'Ошибка авторизации');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Ошибка при авторизации');
     }
   }
 }

@@ -5,12 +5,13 @@ class Group {
   String? statusGroup;
   int? semesterNumber;
 
-  Group(
-      {this.id,
-      this.groupName,
-      this.curatorId,
-      this.statusGroup,
-      this.semesterNumber});
+  Group({
+    this.id,
+    this.groupName,
+    this.curatorId,
+    this.statusGroup,
+    this.semesterNumber,
+  });
 
   Group.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -28,5 +29,11 @@ class Group {
     data['status_group'] = statusGroup;
     data['semester_number'] = semesterNumber;
     return data;
+  }
+
+  // Переопределение метода toString
+  @override
+  String toString() {
+    return 'Group{id: $id, groupName: $groupName, curatorId: $curatorId, statusGroup: $statusGroup, semesterNumber: $semesterNumber}';
   }
 }

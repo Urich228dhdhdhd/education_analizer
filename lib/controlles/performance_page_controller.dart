@@ -31,6 +31,7 @@ class PerformancePageController extends GetxController {
   var year = Rxn<DateTime?>();
   var students = <Student>[].obs;
   var marks = <Mark>[].obs;
+  var isSemesterExist = true.obs;
 
   PerformancePageController({
     required this.semesterRepository,
@@ -109,6 +110,7 @@ class PerformancePageController extends GetxController {
                   (semester) => semester.id! == selectedSemesterId.value)
               .semesterNumber!,
           semesterYear: year.value!.year)) {
+        isSemesterExist(true);
         List<Mark> loadedMarks =
             await markRepository.getMarksByGroupIdSemesterNumberSubjectId(
                 groupId: selectedGroupId.value!,
@@ -121,6 +123,9 @@ class PerformancePageController extends GetxController {
         marks.assignAll(loadedMarks);
         log(marks.toString());
 
+        isLoading(false);
+      } else {
+        isSemesterExist(false);
         isLoading(false);
       }
     }
