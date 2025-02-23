@@ -4,6 +4,7 @@ import 'package:education_analizer/controlles/auth_controller.dart';
 import 'package:education_analizer/model/group.dart';
 import 'package:education_analizer/model/list_of_subject.dart';
 import 'package:education_analizer/model/mark.dart';
+import 'package:education_analizer/model/semester.dart';
 import 'package:education_analizer/model/student.dart';
 import 'package:education_analizer/model/subject.dart';
 import 'package:education_analizer/repository/group_repository.dart';
@@ -22,16 +23,32 @@ class PerformancePageController extends GetxController {
   final SemesterRepository semesterRepository;
 
   var groups = <Group>[].obs;
-  var selectedGroupId = Rxn<int>(null);
+  var selectedGroup = Rxn<Group>(null);
   var subjects = <Subject>[].obs;
   var selectedSubjectId = Rxn<int>(null);
   var isLoading = false.obs;
-  var semesters = <ListOfSubject>[].obs;
-  var selectedSemesterId = Rxn<int>(null);
-  var year = Rxn<DateTime?>();
+  var isLoadingSemester = false.obs;
+  var listOfSubjectsList = <ListOfSubject>[].obs;
+  var semesterList = <Semester>[].obs;
+  var selectedSemester = Rxn<Semester>(null);
   var students = <Student>[].obs;
   var marks = <Mark>[].obs;
   var isSemesterExist = true.obs;
+  var isExam = false.obs;
+  List<String> ratingOptions = [
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    '10',
+    'Зачет',
+    'Незачет'
+  ].obs;
 
   PerformancePageController({
     required this.semesterRepository,
@@ -68,7 +85,7 @@ class PerformancePageController extends GetxController {
       List<Student> loadedStudents =
           await studentRepository.getStudentsByGroupId(groupId);
       students.assignAll(loadedStudents);
-      log(students.toString());
+      // log(students.toString());
     } catch (e) {
       log(
         'Ошибка при загрузке студентов для группы $groupId: $e',
@@ -77,11 +94,11 @@ class PerformancePageController extends GetxController {
   }
 
   Future<void> loadListOfSubject() async {
-    if (selectedGroupId.value != null) {
+    if (selectedGroup.value != null) {
       try {
         isLoading(true);
         List<Subject> loadedSubjects = await listofsubjectRepository
-            .getSubjectsByGroupId(selectedGroupId.value!);
+            .getSubjectsByGroupId(selectedGroup.value!.id!);
         subjects.assignAll(loadedSubjects); // Обновляем список предметов
         isLoading(false);
       } catch (e) {
@@ -92,68 +109,96 @@ class PerformancePageController extends GetxController {
 
   Future<void> loadSemesters() async {
     if (selectedSubjectId.value != null) {
-      isLoading(true);
+      isLoadingSemester.value = true;
       List<ListOfSubject> loadedSemesters =
           await listofsubjectRepository.getListOfSubjectsBySubjectGroupId(
-              selectedGroupId.value!, selectedSubjectId.value!);
-      semesters.assignAll(loadedSemesters);
-      isLoading(false);
+              selectedGroup.value!.id!, selectedSubjectId.value!);
+      listOfSubjectsList.assignAll(loadedSemesters);
+      var loadedSemestersList = await Future.wait(
+        listOfSubjectsList.map((listofSub) async {
+          return await semesterRepository
+              .getSemesterById(listofSub.semesterId!);
+        }),
+      );
+      semesterList.assignAll(loadedSemestersList);
+      isLoadingSemester.value = false;
     }
   }
 
   Future<void> loadMarks() async {
-    if (year.value != null) {
-      isLoading(true);
-      if (await semesterRepository.isSemesterExist(
-          semesterNumber: semesters
-              .firstWhere(
-                  (semester) => semester.id! == selectedSemesterId.value)
-              .semesterNumber!,
-          semesterYear: year.value!.year)) {
-        isSemesterExist(true);
-        List<Mark> loadedMarks =
-            await markRepository.getMarksByGroupIdSemesterNumberSubjectId(
-                groupId: selectedGroupId.value!,
-                subjectId: selectedSubjectId.value!,
-                semesterNumber: semesters
-                    .firstWhere(
-                        (semester) => semester.id! == selectedSemesterId.value)
-                    .semesterNumber!,
-                semesterYear: year.value!.year);
-        marks.assignAll(loadedMarks);
-        log(marks.toString());
+    isLoadingSemester.value = true;
+    List<Mark> loadedMarks =
+        await markRepository.getMarksByGroupIdSemesterNumberSubjectId(
+            groupId: selectedGroup.value!.id!,
+            subjectId: selectedSubjectId.value!,
+            semesterNumber: selectedSemester.value!.semesterNumber!,
+            semesterYear: selectedSemester.value!.semesterYear!);
+    marks.assignAll(loadedMarks);
+    await checkIsExamMarksStatus();
 
-        isLoading(false);
-      } else {
-        isSemesterExist(false);
-        isLoading(false);
-      }
-    }
+    isLoadingSemester.value = false;
   }
 
-  void setSelectedGroup(int groupId) async {
-    selectedGroupId.value = groupId;
+  Future<void> setSelectedGroup(Group group) async {
+    selectedGroup.value = group;
     selectedSubjectId.value = null;
-    selectedSemesterId.value = null;
-    year.value = null;
-    semesters.clear();
-    await loadStudents(groupId: groupId);
+    selectedSemester.value = null;
+    listOfSubjectsList.clear();
+    semesterList.clear();
+    await loadStudents(groupId: group.id!);
     await loadListOfSubject(); // Загружаем предметы после выбора группы
   }
 
-  void setSelectedSubject(int subjectId) async {
+  Future<void> setSelectedSubject(int subjectId) async {
     selectedSubjectId.value = subjectId;
-    selectedSemesterId.value = null;
+    selectedSemester.value = null;
+    semesterList.clear();
+
     await loadSemesters();
   }
 
-  void setSelectedSemester(int semesterId) async {
-    selectedSemesterId.value = semesterId;
-    year.value = null;
+  Future<void> setSelectedSemester(Semester semester) async {
+    isLoadingSemester.value = true;
+    selectedSemester.value = semester;
+    await loadMarks();
+    isLoadingSemester.value = false;
   }
 
-  void setSelecetedDate(DateTime selecetdDate) async {
-    year.value = selecetdDate;
+  Future<void> updateMarksIsExamStatus(bool isExam) async {
+    // await checkAllMarksToIsExistStatus(listOfSubjectsList);
+    for (var mark in marks) {
+      await markRepository.updateMark(mark: Mark(id: mark.id, isExam: isExam));
+    }
     await loadMarks();
+  }
+
+  Future<void> checkIsExamMarksStatus() async {
+    isExam.value = marks.any((mark) => mark.isExam == true);
+  }
+
+  Future<Semester?> hasExamMarks(List<ListOfSubject> listOfSubjects) async {
+    List<ListOfSubject> filteredSubjects = List.from(listOfSubjects);
+
+    filteredSubjects
+        .removeWhere((item) => item.semesterId == selectedSemester.value!.id);
+
+    for (var listOfSub in filteredSubjects) {
+      Semester? semester = semesterList.firstWhere(
+        (item) => item.id == listOfSub.semesterId,
+      );
+
+      var marks = await markRepository.getMarksByGroupIdSemesterNumberSubjectId(
+        groupId: selectedGroup.value!.id!,
+        subjectId: selectedSubjectId.value!,
+        semesterNumber: semester.semesterNumber!,
+        semesterYear: semester.semesterYear!,
+      );
+
+      bool hasExamMark = marks.any((mark) => mark.isExam == true);
+      if (hasExamMark) {
+        return semester;
+      }
+    }
+    return null;
   }
 }

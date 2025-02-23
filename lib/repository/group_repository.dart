@@ -4,9 +4,20 @@ import 'package:education_analizer/model/group.dart';
 import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
 
+import '../design/widgets/dimentions.dart';
+
 class GroupRepository extends GetxService {
   final String url = "$mainUrl/api/groups"; // 192.168.100.8 localhost
   final Dio dio = Dio();
+
+  Future<List<Group>> getGroups() async {
+    try {
+      final response = await dio.get(url);
+      return response.data.map<Group>((e) => Group.fromJson(e)).toList();
+    } on DioException catch (e) {
+      throw handleDioError(e);
+    }
+  }
 
   // Получение групп по роли
   Future<List<Map<String, dynamic>>> getGroupByRole({
@@ -27,9 +38,8 @@ class GroupRepository extends GetxService {
       } else {
         throw Exception('Ошибка при получении групп: ${response.statusCode}');
       }
-    } catch (e) {
-      log('Ошибка: $e');
-      throw Exception('Не удалось выполнить запрос');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -57,28 +67,20 @@ class GroupRepository extends GetxService {
       } else {
         throw Exception('Ошибка при получении групп: ${response.statusCode}');
       }
-    } catch (e) {
-      log('Ошибка: $e');
-      throw Exception('Не удалось выполнить запрос');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
   // Создание новой группы
-  Future<Map<String, dynamic>> createGroup({
-    required String groupName,
-    int? curatorId,
-    String statusGroup = "ACTIVE",
-    int semesterNumber = 1,
-  }) async {
+  Future<Map<String, dynamic>> createGroup({required Group group}) async {
     try {
+      group.statusGroup = "ACTIVE";
+      final groupData = group.toJson();
+      log(groupData.toString());
       final response = await dio.post(
         url,
-        data: {
-          "group_name": groupName,
-          "curator_id": curatorId,
-          "status_group": statusGroup,
-          "semester_number": semesterNumber,
-        },
+        data: groupData,
       );
 
       if (response.statusCode == 201) {
@@ -87,54 +89,34 @@ class GroupRepository extends GetxService {
         throw Exception(response.data['message'] ?? 'Ощибка создания');
       }
     } on DioException catch (e) {
-      log(e.toString());
-      throw Exception(e.response?.data['message'] ?? 'Ошибка при авторизации');
+      throw handleDioError(e);
     }
   }
 
   // Получение группы по ID
-  Future<Map<String, dynamic>> getGroupById(int id) async {
+  Future<Group> getGroupById(int id) async {
     try {
       final response = await dio.get("$url/$id");
 
       if (response.statusCode == 200) {
-        return Map<String, dynamic>.from(response.data);
+        return Group.fromJson(response.data);
       } else {
         throw Exception('Ошибка при получении группы: ${response.statusCode}');
       }
-    } catch (e) {
-      log('Ошибка: $e');
-      throw Exception('Не удалось выполнить запрос');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
   // Обновление группы
-  Future<Map<String, dynamic>> updateGroup({
-    required int id,
-    required String groupName,
-    int? curatorId,
-    String? statusGroup,
-    int? semesterNumber,
-  }) async {
+  Future<Map<String, dynamic>> updateGroup({required Group group}) async {
     try {
-      final response = await dio.put(
-        "$url/$id",
-        data: {
-          "group_name": groupName,
-          "curator_id": curatorId,
-          "status_group": statusGroup,
-          "semester_number": semesterNumber,
-        },
-      );
+      final groupData = group.toJson();
+      final response = await dio.put("$url/${group.id}", data: groupData);
 
-      if (response.statusCode == 200) {
-        return Map<String, dynamic>.from(response.data);
-      } else {
-        throw Exception('Ошибка при обновлении группы: ${response.statusCode}');
-      }
-    } catch (e) {
-      log('Ошибка: $e');
-      throw Exception('Не удалось выполнить запрос');
+      return Map<String, dynamic>.from(response.data);
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -146,9 +128,8 @@ class GroupRepository extends GetxService {
       if (response.statusCode != 204) {
         throw Exception('Ошибка при удалении группы: ${response.statusCode}');
       }
-    } catch (e) {
-      log('Ошибка: $e');
-      throw Exception('Не удалось выполнить запрос');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 }

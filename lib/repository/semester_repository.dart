@@ -1,7 +1,11 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:education_analizer/model/semester.dart';
 import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
+
+import '../design/widgets/dimentions.dart';
 
 class SemesterRepository extends GetxService {
   final String url = "$mainUrl/api/semesters"; // 192.168.100.8 localhost
@@ -15,8 +19,8 @@ class SemesterRepository extends GetxService {
       return (response.data as List)
           .map((semesterJson) => Semester.fromJson(semesterJson))
           .toList();
-    } catch (e) {
-      throw Exception('Ошибка при получении семестров: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -25,8 +29,8 @@ class SemesterRepository extends GetxService {
     try {
       final response = await dio.get('$url/$id');
       return Semester.fromJson(response.data);
-    } catch (e) {
-      throw Exception('Ошибка при получении семестра: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -34,9 +38,10 @@ class SemesterRepository extends GetxService {
       {required int semesterNumber, required int year}) async {
     try {
       final response = await dio.get('$url/getsemester/$semesterNumber/$year');
+      // log(response.data.toString());
       return Semester.fromJson(response.data);
-    } catch (e) {
-      throw Exception('Ошибка при получении семестра: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -52,8 +57,8 @@ class SemesterRepository extends GetxService {
         'semester_part': semesterPart, // Добавлено новое поле
       });
       return Semester.fromJson(response.data);
-    } catch (e) {
-      throw Exception('Ошибка при создании семестра: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -67,8 +72,8 @@ class SemesterRepository extends GetxService {
         'semester_part': semesterPart, // Добавлено новое поле
       });
       return Semester.fromJson(response.data);
-    } catch (e) {
-      throw Exception('Ошибка при обновлении семестра: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -76,8 +81,8 @@ class SemesterRepository extends GetxService {
   Future<void> deleteSemester(int id) async {
     try {
       await dio.delete('$url/$id');
-    } catch (e) {
-      throw Exception('Ошибка при удалении семестра: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -88,8 +93,8 @@ class SemesterRepository extends GetxService {
           await dio.get('$url/check/$semesterNumber/$semesterYear');
       // Предполагается, что ответ возвращает true или false
       return response.data['exists'] == true;
-    } catch (e) {
-      throw Exception('Ошибка при проверке существования семестра: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 }

@@ -1,13 +1,13 @@
+import 'dart:developer';
+
 import 'package:education_analizer/model/list_of_subject.dart';
 import 'package:education_analizer/repository/listofsubject_repository.dart';
 import 'package:get/get.dart';
 
 class SemesterSelectionController extends GetxController {
-  final ListofsubjectRepository listOfSubjectRepository; // Объявляем переменную
+  final ListofsubjectRepository listOfSubjectRepository;
 
-  // Список для хранения выбранных семестров
   final RxList<int> selectedSemesters = <int>[].obs;
-  // Локальный список для отслеживания изменений
   final List<int> initialSemesters = <int>[];
 
   // Конструктор контроллера
@@ -15,15 +15,12 @@ class SemesterSelectionController extends GetxController {
 
   // Метод инициализации выбранных семестров
   void initializeSelectedSemesters(List<ListOfSubject> subjects) {
-    selectedSemesters.value = subjects
-        .map((subject) => subject.semesterNumber)
-        .where((semester) => semester != null)
-        .map((semester) => semester!)
-        .toList();
-
-    // Сохраняем исходное состояние семестров для сравнения
-    initialSemesters.clear();
-    initialSemesters.addAll(selectedSemesters);
+    // Инициализируем начальные семестры на основе переданных данных
+    initialSemesters
+        .addAll(subjects.map((subject) => subject.semesterId!).toList());
+    // Инициализируем выбранные семестры в контроллере
+    selectedSemesters.clear();
+    selectedSemesters.addAll(initialSemesters);
   }
 
   // Метод для переключения состояния семестра
@@ -40,22 +37,20 @@ class SemesterSelectionController extends GetxController {
     // Проходим по всем семестрам, чтобы добавить или удалить их в базе
     for (int semester in selectedSemesters) {
       if (!initialSemesters.contains(semester)) {
-        // Новый семестр - добавляем в базу
-        await listOfSubjectRepository.createListOfSubject({
-          'semester_number': semester,
-          'group_id': groupId,
-          'subject_id': subjectId,
-        });
+        await listOfSubjectRepository.createListOfSubject(
+            listOfSubject: ListOfSubject(
+                subjectId: subjectId, groupId: groupId, semesterId: semester));
       }
     }
-
     for (int semester in initialSemesters) {
       if (!selectedSemesters.contains(semester)) {
-        // Семестр был убран - удаляем из базы
         await listOfSubjectRepository.deleteListOfSubjectbyAllParams(
-            groupId, subjectId, semester);
+            listOfSubject: ListOfSubject(
+                groupId: groupId, subjectId: subjectId, semesterId: semester));
       }
     }
+    selectedSemesters.clear();
+    initialSemesters.clear();
   }
 
   // Метод для получения выбранных семестров

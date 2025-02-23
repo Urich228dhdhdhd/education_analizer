@@ -22,4 +22,9 @@ class Semester {
     data['semester_year'] = semesterYear;
     return data;
   }
+
+  @override
+  String toString() {
+    return 'Semester(id: $id, semesterPart: $semesterPart, semesterNumber: $semesterNumber, semesterYear: $semesterYear)';
+  }
 }

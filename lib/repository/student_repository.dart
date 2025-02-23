@@ -5,6 +5,8 @@ import 'package:education_analizer/model/student.dart';
 import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
 
+import '../design/widgets/dimentions.dart';
+
 class StudentRepository extends GetxService {
   final String url = "$mainUrl/api/students";
   final Dio dio = Dio();
@@ -14,9 +16,8 @@ class StudentRepository extends GetxService {
     try {
       final response = await dio.get(url);
       return response.data;
-    } catch (e) {
-      log("Ошибка при получении студентов: $e");
-      throw Exception('Ошибка при получении студентов');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -25,9 +26,8 @@ class StudentRepository extends GetxService {
     try {
       final response = await dio.get('$url/$id');
       return response.data; // Предполагается, что ответ - это объект студента
-    } catch (e) {
-      log("Ошибка при получении студента с ID $id: $e");
-      throw Exception('Ошибка при получении студента');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -37,20 +37,9 @@ class StudentRepository extends GetxService {
       log(studentData.toString());
       final response = await dio.post(url, data: studentData);
 
-      if (response.statusCode == 200) {
-        return Student.fromJson(response.data);
-      }
-      if (response.statusCode == 400) {
-        throw Exception(response.data["message"] ?? "Ошибка создания");
-      }
-      throw Exception("Неизвестная ошибка: ${response.statusCode}");
-      // } on DioException catch (e) {
-      //   log(e.toString());
-      //   throw Exception(
-      //       e.response?.data["message"] ?? 'Ошибка при создании студента');
-    } catch (e) {
-      log("Неожиданная ошибка: $e");
-      throw Exception("Произошла ошибка при создании студента");
+      return Student.fromJson(response.data);
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -60,9 +49,8 @@ class StudentRepository extends GetxService {
     try {
       final response = await dio.put('$url/$id', data: studentData);
       return response.data; // Возвращает обновленного студента
-    } catch (e) {
-      log("Ошибка при обновлении студента с ID $id: $e");
-      throw Exception('Ошибка при обновлении студента');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -70,24 +58,24 @@ class StudentRepository extends GetxService {
   Future<void> deleteStudent(int id) async {
     try {
       await dio.delete('$url/$id');
-    } catch (e) {
-      log("Ошибка при удалении студента с ID $id: $e");
-      throw Exception('Ошибка при удалении студента');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
   /// Получение студентов по ID и роли
-  Future<List<dynamic>> getStudentsByRole(
+  Future<List<Student>> getStudentsByRole(
       {required int userId, required String userRole}) async {
     try {
       final response = await dio.post('$url/get/by-role', data: {
         'userId': userId,
         'userRole': userRole,
       });
-      return response.data; // Возвращает список студентов
-    } catch (e) {
-      log("Ошибка при получении студентов по роли: $e");
-      throw Exception('Ошибка при получении студентов по роли');
+      return response.data
+          .map<Student>((student) => Student.fromJson(student))
+          .toList(); // Возвращает список студентов
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -100,9 +88,8 @@ class StudentRepository extends GetxService {
           .map((studentJson) => Student.fromJson(studentJson))
           .toList();
       return students; // Возвращает список студентов
-    } catch (e) {
-      log("Ошибка при получении студентов по ID группы $groupId: $e");
-      throw Exception('Ошибка при получении студентов по ID группы');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 }

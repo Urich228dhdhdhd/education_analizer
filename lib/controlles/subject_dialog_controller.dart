@@ -1,4 +1,6 @@
 import 'package:education_analizer/controlles/subject_page_controller.dart';
+import 'package:education_analizer/design/widgets/colors.dart';
+import 'package:education_analizer/design/widgets/dimentions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

@@ -6,6 +6,8 @@ import 'package:education_analizer/model/subject.dart';
 import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
 
+import '../design/widgets/dimentions.dart';
+
 class ListofsubjectRepository extends GetxService {
   final String url = "$mainUrl/api/listOfSubjects"; // 192.168.100.8 localhost
   final Dio dio = Dio();
@@ -15,17 +17,19 @@ class ListofsubjectRepository extends GetxService {
     try {
       final response = await dio.get(url);
       return response.data;
-    } catch (e) {
-      throw Exception('Ошибка при получении списка предметов: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
-  Future<List<dynamic>> getListOfSubjectsByGroupId(int groupId) async {
+  Future<List<ListOfSubject>> getListOfSubjectsByGroupId(int groupId) async {
     try {
       final response = await dio.get("$url/group/$groupId");
-      return response.data;
-    } catch (e) {
-      throw Exception('Ошибка при получении списка предметов по grooup_id: $e');
+      return response.data
+          .map<ListOfSubject>((item) => ListOfSubject.fromJson(item))
+          .toList();
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -40,8 +44,8 @@ class ListofsubjectRepository extends GetxService {
       return data
           .map((item) => ListOfSubject.fromJson(item))
           .toList(); // Преобразуем в List<ListOfSubject>
-    } catch (e) {
-      throw Exception('Ошибка при получении списка предметов по group_id: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -50,8 +54,8 @@ class ListofsubjectRepository extends GetxService {
     try {
       final response = await dio.get('$url/$id');
       return response.data;
-    } catch (e) {
-      throw Exception('Ошибка при получении предмета по ID: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -70,30 +74,34 @@ class ListofsubjectRepository extends GetxService {
       }).toList();
 
       return subjects;
-    } catch (e) {
-      throw Exception(
-          'Ошибка при получении списка предметов с краткими именами по group_id: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
   // Создание нового предмета
-  Future<dynamic> createListOfSubject(Map<String, dynamic> subjectData) async {
+  Future<dynamic> createListOfSubject(
+      {required ListOfSubject listOfSubject}) async {
     try {
-      final response = await dio.post(url, data: subjectData);
+      final listOfSubjectData = listOfSubject.toJson();
+      final response = await dio.post(url, data: listOfSubjectData);
       return response.data;
-    } catch (e) {
-      throw Exception('Ошибка при создании предмета: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
   // Обновление предмета по ID
   Future<dynamic> updateListOfSubject(
-      int id, Map<String, dynamic> subjectData) async {
+      {required ListOfSubject listOfSubject}) async {
     try {
-      final response = await dio.put('$url/$id', data: subjectData);
+      final listOfSubjectData = listOfSubject.toJson();
+
+      final response =
+          await dio.put('$url/${listOfSubject.id}', data: listOfSubjectData);
       return response.data;
-    } catch (e) {
-      throw Exception('Ошибка при обновлении предмета: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -101,38 +109,34 @@ class ListofsubjectRepository extends GetxService {
   Future<void> delete1ListOfSubject(int id) async {
     try {
       await dio.delete('$url/$id');
-    } catch (e) {
-      throw Exception('Ошибка при удалении предмета: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
   // Проверка существования предмета
   Future<bool> checkListOfSubjectExists(
-      int subjectId, int groupId, int semesterNumber) async {
+      {required ListOfSubject listOfSubject}) async {
     try {
-      final response = await dio.post("$url/isexist", data: {
-        "subject_id": subjectId,
-        "group_id": groupId,
-        "semester_number": semesterNumber,
-      });
+      final listOfSubjectData = listOfSubject.toJson();
+
+      final response = await dio.post("$url/isexist", data: listOfSubjectData);
       return response.statusCode == 200; // Если статус 200, запись существует
-    } catch (e) {
-      throw Exception('Ошибка при проверке существования предмета: $e');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
   Future<void> deleteListOfSubjectbyAllParams(
-      int subjectId, int groupId, int semesterNumber) async {
+      {required ListOfSubject listOfSubject}) async {
     try {
+      final listOfSubjectData = listOfSubject.toJson();
+
       await dio.delete(
-          "$url/group/$groupId/subject/$subjectId/semester_number/$semesterNumber",
-          data: {
-            "group_id": groupId,
-            "subject_id": subjectId,
-            "semester_number": semesterNumber,
-          });
-    } catch (e) {
-      throw Exception('Ошибка при удалении семестра: $e');
+          "$url/group/${listOfSubject.groupId}/subject/${listOfSubject.subjectId}/semester/${listOfSubject.semesterId}",
+          data: listOfSubjectData);
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 }

@@ -2,9 +2,12 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:education_analizer/model/absence.dart';
+import 'package:education_analizer/model/group.dart';
 import 'package:education_analizer/model/group_absence_report.dart';
 import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
+
+import '../design/widgets/dimentions.dart';
 
 class AbsenceRepository extends GetxService {
   final String url = "$mainUrl/api/absences";
@@ -17,10 +20,14 @@ class AbsenceRepository extends GetxService {
       return (response.data as List)
           .map((json) => Absence.fromJson(json))
           .toList();
-    } catch (e) {
-      print('Ошибка при получении всех пропусков: $e');
-      rethrow;
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
+
+    // catch (e) {
+    //   print('Ошибка при получении всех пропусков: $e');
+    //   rethrow;
+    // }
   }
 
   // Получение пропуска по ID
@@ -28,10 +35,14 @@ class AbsenceRepository extends GetxService {
     try {
       final response = await dio.get('$url/$id');
       return Absence.fromJson(response.data);
-    } catch (e) {
-      print('Ошибка при получении пропуска по ID: $e');
-      rethrow;
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
+
+    // catch (e) {
+    //   print('Ошибка при получении пропуска по ID: $e');
+    //   rethrow;
+    // }
   }
 
   // Проверка наличия пропуска
@@ -47,7 +58,7 @@ class AbsenceRepository extends GetxService {
       if (e is DioException && e.response?.statusCode == 404) {
         return null;
       }
-      print('Ошибка при проверке пропуска: $e');
+      // print('Ошибка при проверке пропуска: $e');
       rethrow;
     }
   }
@@ -76,41 +87,43 @@ class AbsenceRepository extends GetxService {
         },
       );
 
-      if (response.statusCode == 201) {
-        return Map<String, dynamic>.from(response.data);
-      } else {
-        throw Exception(
-            'Ошибка при создании записи о пропусках: ${response.statusCode}');
-      }
-    } catch (e) {
-      log('Ошибка при создании записи о пропусках: $e');
-      throw Exception('Не удалось выполнить запрос');
+      return Map<String, dynamic>.from(response.data);
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
   // Обновление записи пропуска по ID
-  Future<Absence> updateAbsence(int id, Absence absence) async {
+  Future<Absence> updateAbsence(Absence absence) async {
     try {
-      final response = await dio.put('$url/$id', data: absence.toJson());
+      final response =
+          await dio.put('$url/${absence.id}', data: absence.toJson());
       return Absence.fromJson(response.data);
-    } catch (e) {
-      print('Ошибка при обновлении записи пропуска: $e');
-      rethrow;
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
+    // catch (e) {
+    //   print('Ошибка при обновлении записи пропуска: $e');
+    //   rethrow;
+    // }
   }
 
   // Удаление записи пропуска по ID
   Future<void> deleteAbsenceById(int id) async {
     try {
       await dio.delete('$url/$id');
-    } catch (e) {
-      print('Ошибка при удалении записи пропуска: $e');
-      rethrow;
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
+
+    // catch (e) {
+    //   print('Ошибка при удалении записи пропуска: $e');
+    //   rethrow;
+    // }
   }
 
   Future<List<GroupAbsenceReport>> getAbsenceReport({
-    required List<int> groupIds,
+    required List<Group> group,
     required int year,
     required int month,
     required List<String> absenceTypes,
@@ -121,33 +134,25 @@ class AbsenceRepository extends GetxService {
       final response = await dio.post(
         '$url/report',
         data: {
-          'selectedGroups': groupIds,
+          'selectedGroups': group.map((item) => item.id).toList(),
           'selectedMonth': month,
           'selectedYear': year,
           'selectedAbsenceTypes': absenceTypes,
         },
       );
 
-      if (response.statusCode == 200) {
-        // Преобразование JSON-ответа в список объектов GroupAbsenceReport
-        List<dynamic> responseData = response.data;
+      List<dynamic> responseData = response.data;
 
-        // Преобразуем JSON в список объектов
-        List<GroupAbsenceReport> reports = responseData
-            .map((json) => GroupAbsenceReport.fromJson(json))
-            .toList();
+      List<GroupAbsenceReport> reports = responseData
+          .map((json) => GroupAbsenceReport.fromJson(json))
+          .toList();
+      // log(reports.toString());
 
-        // Логирование преобразованных объектов
-        // Явное преобразование в строку с использованием toString()
-        log("Полученные отчеты: ${reports.map((report) => report.toString()).join(', ')}");
+      // log("Полученные отчеты: ${reports.map((report) => report.toString()).join(', ')}");
 
-        return reports;
-      } else {
-        throw Exception('Ошибка при получении отчета: ${response.statusCode}');
-      }
-    } catch (e) {
-      log('Ошибка при получении отчета: $e');
-      throw Exception('Не удалось получить отчет о пропусках');
+      return reports;
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 }

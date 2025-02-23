@@ -1,7 +1,11 @@
+import 'dart:developer';
+
 import 'package:education_analizer/controlles/semester_selection_controller.dart';
 import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
+import 'package:education_analizer/design/widgets/dimentions.dart';
 import 'package:education_analizer/model/list_of_subject.dart';
+import 'package:education_analizer/model/semester.dart';
 import 'package:education_analizer/repository/listofsubject_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -9,111 +13,118 @@ import 'package:get/get.dart';
 class SemesterDialogPage extends StatelessWidget {
   final int groupId;
   final int subjectId;
-  final List<ListOfSubject> listOfSubjects;
+  final List<ListOfSubject> listOfSubjects; // Список предметов с семестрами
+  final List<Semester> semesterList; // Список всех семестров
 
   const SemesterDialogPage({
     super.key,
     required this.groupId,
     required this.subjectId,
     required this.listOfSubjects,
+    required this.semesterList,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Инициализация контроллера
     final SemesterSelectionController controller =
         Get.find<SemesterSelectionController>();
 
-    // Инициализируем выбранные семестры на основе переданных предметов
     controller.initializeSelectedSemesters(listOfSubjects);
-
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      backgroundColor: primary2Color, // Background color for the dialog
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          minWidth: 300,
-          minHeight: 200,
-          maxWidth: 400,
-          maxHeight: 400,
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Выберите семестры',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1D427A), // Updated color
-                  ),
-                ),
-                const SizedBox(height: 10),
-                // Список чекбоксов для 8 семестров
-                Column(
-                  children: List.generate(8, (index) {
-                    int semesterNumber = index + 1;
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+      backgroundColor: primaryColor,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(padding14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Выберите семестры',
+                  style:
+                      primaryStyle.copyWith(fontSize: 16, color: Colors.black)),
+              Container(
+                // color: greyColor,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: List.generate(semesterList.length, (index) {
+                    var semester = semesterList[index];
+
                     return Obx(() {
-                      return CheckboxListTile(
-                        title: Text(
-                          'Семестр $semesterNumber',
-                          style: dialogSemestrTextStyle, // Updated font size
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: CheckboxListTile(
+                          tileColor: whiteColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(
+                              color: Colors.grey,
+                              width: 1,
+                            ),
+                          ),
+                          title: Text(
+                            'Семестр ${semester.semesterNumber} - ${semester.semesterYear}',
+                            style: const TextStyle(
+                                fontSize: 16,
+                                fontFamily: "Inter",
+                                fontWeight: FontWeight.w500),
+                          ),
+                          value: controller.selectedSemesters
+                              .contains(semester.id),
+                          activeColor: const Color(0xFF1D427A),
+                          onChanged: (bool? value) {
+                            if (value != null) {
+                              controller.toggleSemester(semester.id!);
+                            }
+                          },
                         ),
-                        value: controller.selectedSemesters
-                            .contains(semesterNumber),
-                        activeColor:
-                            const Color(0xFF1D427A), // Checkbox active color
-                        onChanged: (bool? value) {
-                          if (value != null) {
-                            controller.toggleSemester(semesterNumber);
-                          }
-                        },
                       );
                     });
                   }),
                 ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color(0xFF1D427A), // Button color
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(15), // Rounded corners
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 10),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1D427A), // Button color
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(15), // Rounded corners
                       ),
-                      child: const Text(
-                        'ОК',
-                        style: TextStyle(color: Colors.white), // Text color
-                      ),
-                      onPressed: () async {
-                        // Применение изменений и закрытие диалога
-                        await controller.applyChanges(groupId, subjectId);
-                        Get.back(result: controller.getSelectedSemesters());
-                        print(
-                            'Выбранные семестры: ${controller.getSelectedSemesters()}');
-                      },
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                    child: const Text(
+                      'ОК',
+                      style: TextStyle(color: Colors.white), // Text color
+                    ),
+                    onPressed: () async {
+                      try {
+                        await controller.applyChanges(groupId, subjectId);
+                        Get.back(result: [groupId, subjectId]);
+                      } catch (e) {
+                        showSnackBar(title: "Ошибка", message: e.toString());
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  static Future<List<int>> show(BuildContext context,
-      List<ListOfSubject> listOfSubjects, int groupId, int subjectId) async {
+  static Future<List<int>> show(
+      BuildContext context,
+      List<ListOfSubject> listOfSubjects,
+      int groupId,
+      int subjectId,
+      List<Semester> semesterList) async {
     // Здесь нужно убедиться, что вы создаете экземпляр контроллера с репозиторием
     Get.put(SemesterSelectionController(
         listOfSubjectRepository: Get.find<ListofsubjectRepository>()));
@@ -123,8 +134,9 @@ class SemesterDialogPage extends StatelessWidget {
         groupId: groupId,
         subjectId: subjectId,
         listOfSubjects: listOfSubjects,
+        semesterList: semesterList,
       ),
-      barrierDismissible: false,
+      barrierDismissible: true, // С возможностью закрытия при клике вне диалога
     );
 
     return result ?? [];

@@ -39,6 +39,7 @@ class GroupDialog extends StatelessWidget {
       if (dialogController.groupId.value != null) {
         await dialogController
             .fetchAllListOfSubjectByGroupId(dialogController.groupId.value!);
+        await dialogController.getSemestersForGroup();
       }
 
       dialogController.isLoading.value = false;
@@ -191,8 +192,20 @@ class GroupDialog extends StatelessWidget {
           return ListView.builder(
             itemCount: dialogController.filteredSubjects.length,
             itemBuilder: (context, index) {
-              return _buildSubjectItem(dialogController,
-                  listOfSubjectRepository, index, context, focusNode);
+              return FutureBuilder<Widget>(
+                future: _buildSubjectItem(dialogController,
+                    listOfSubjectRepository, index, context, focusNode),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator(); // Пока загружается
+                  } else if (snapshot.hasError) {
+                    return Text(
+                        'Ошибка: ${snapshot.error}'); // Обработка ошибки
+                  } else {
+                    return snapshot.data!; // Отображаем полученный виджет
+                  }
+                },
+              );
             },
           );
         }
@@ -200,12 +213,12 @@ class GroupDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildSubjectItem(
+  Future<Widget> _buildSubjectItem(
       GroupDialogPageController dialogController,
       ListofsubjectRepository listOfSubjectRepository,
       int index,
       BuildContext context,
-      FocusNode focusNode) {
+      FocusNode focusNode) async {
     final subject = dialogController.filteredSubjects[index];
     String semesterNumbers = '';
 
@@ -213,14 +226,10 @@ class GroupDialog extends StatelessWidget {
       final matchingSubjects = dialogController.listOfSubjects
           .where((listSubj) => listSubj.subjectId == subject.id)
           .toList();
-
-      List<int> semestersForSubject = matchingSubjects
-          .map((listSubj) => listSubj.semesterNumber)
-          .where((semester) => semester != null)
-          .map((semester) => semester!)
-          .toList();
-
-      semesterNumbers = semestersForSubject.join(', ');
+      // log("${subject.toString()}-matchingSubjects:${matchingSubjects.toString()}");
+      final semestersForSubject = await dialogController
+          .getSemestersNumbersForSubject(matchingSubjects);
+      semesterNumbers = semestersForSubject.join(", ");
     }
 
     return Padding(
@@ -249,19 +258,19 @@ class GroupDialog extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: GestureDetector(
-                onTap: () async {
-                  List<ListOfSubject> listOfSubjects =
-                      await listOfSubjectRepository
-                          .getListOfSubjectsBySubjectGroupId(
-                              dialogController.groupId.value!, subject.id!);
+                // onTap: () async {
+                //   List<ListOfSubject> listOfSubjects =
+                //       await listOfSubjectRepository
+                //           .getListOfSubjectsBySubjectGroupId(
+                //               dialogController.groupId.value!, subject.id!);
 
-                  List<int> selectedSemesters = await SemesterDialogPage.show(
-                    context,
-                    listOfSubjects, // Передаем полученный список предметов
-                    dialogController.groupId.value!,
-                    subject.id!,
-                  );
-                },
+                //   List<int> selectedSemesters = await SemesterDialogPage.show(
+                //     context,
+                //     listOfSubjects, // Передаем полученный список предметов
+                //     dialogController.groupId.value!,
+                //     subject.id!,
+                //   );
+                // },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
@@ -283,14 +292,14 @@ class GroupDialog extends StatelessWidget {
                           await listOfSubjectRepository
                               .getListOfSubjectsBySubjectGroupId(
                                   dialogController.groupId.value!, subject.id!);
+                      log(listOfSubjects.toString());
 
-                      List<int> selectedSemesters =
-                          await SemesterDialogPage.show(
-                        context,
-                        listOfSubjects, // Передаем полученный список предметов
-                        dialogController.groupId.value!,
-                        subject.id!,
-                      );
+                      List<int> selectedSemesters = await SemesterDialogPage.show(
+                          context,
+                          listOfSubjects, // Передаем полученный список предметов
+                          dialogController.groupId.value!,
+                          subject.id!,
+                          dialogController.groupSemesters);
                       await dialogController.fetchAllListOfSubjectByGroupId(
                           dialogController.groupId.value!);
                     },
@@ -339,7 +348,7 @@ class GroupDialog extends StatelessWidget {
                 await dialogController.createNewGroup(
                   groupName: groupNameController.text.trim(),
                 );
-                await checkSemesters(dialogController);
+                await dialogController.checkSemesters();
                 dialogController.startYear.value = null;
                 dialogController.endYear.value = null;
               }
@@ -399,28 +408,5 @@ class GroupDialog extends StatelessWidget {
       ),
       suffixIcon: Icon(icon, color: Colors.grey),
     );
-  }
-
-  Future<void> checkSemesters(
-      GroupDialogPageController dialogController) async {
-    for (int year = dialogController.startYear.value!;
-        year <= dialogController.endYear.value!;
-        year++) {
-      for (int semesterPart = 1; semesterPart <= 2; semesterPart++) {
-        int semesterNumber =
-            (year - dialogController.startYear.value!) * 2 + semesterPart;
-
-        bool exists = await dialogController.semesterRepository.isSemesterExist(
-          semesterNumber: semesterNumber,
-          semesterYear: year,
-        );
-        if (!exists) {
-          dialogController.semesterRepository.createSemester(
-              semesterNumber: semesterNumber,
-              semesterYear: year,
-              semesterPart: semesterPart);
-        }
-      }
-    }
   }
 }

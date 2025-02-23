@@ -4,8 +4,15 @@ class Mark {
   int? semesterId;
   int? subjectId;
   String? mark;
+  bool? isExam;
 
-  Mark({this.id, this.studentId, this.semesterId, this.subjectId, this.mark});
+  Mark(
+      {this.id,
+      this.studentId,
+      this.semesterId,
+      this.subjectId,
+      this.mark,
+      this.isExam});
 
   Mark.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -13,6 +20,7 @@ class Mark {
     semesterId = json['semester_id'];
     subjectId = json['subject_id'];
     mark = json['mark'];
+    isExam = json['is_exam'];
   }
 
   Map<String, dynamic> toJson() {
@@ -22,11 +30,12 @@ class Mark {
     data['semester_id'] = semesterId;
     data['subject_id'] = subjectId;
     data['mark'] = mark;
+    data['is_exam'] = isExam;
     return data;
   }
 
   @override
   String toString() {
-    return 'Mark(id: $id, studentId: $studentId, semesterId: $semesterId, subjectId: $subjectId,mark: $mark )\n';
+    return 'Mark(id: $id, studentId: $studentId, semesterId: $semesterId, subjectId: $subjectId,mark: $mark, isExam: $isExam)\n';
   }
 }

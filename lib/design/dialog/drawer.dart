@@ -1,3 +1,4 @@
+import 'package:education_analizer/controlles/main_page_controller.dart';
 import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
@@ -19,9 +20,12 @@ class CustomDrawer extends StatelessWidget {
             decoration: const BoxDecoration(
               color: primary7Color,
             ),
-            child: Image.asset("lib/images/college_image.png"),
+            child: Image.asset(
+              "lib/images/college_image.png",
+            ),
           ),
           ListTile(
+            tileColor: Get.currentRoute == "/home" ? greyColor[300] : null,
             leading: SizedBox(
               height: 25,
               width: 25,
@@ -31,11 +35,12 @@ class CustomDrawer extends StatelessWidget {
               'Главное меню',
               style: styleDrawer,
             ),
-            onTap: () {
+            onTap: () async {
               Get.toNamed("/home");
             },
           ),
           ListTile(
+            tileColor: Get.currentRoute == "/group" ? greyColor[300] : null,
             leading: SizedBox(
               height: 25,
               width: 25,
@@ -50,13 +55,14 @@ class CustomDrawer extends StatelessWidget {
             },
           ),
           ListTile(
+            tileColor: Get.currentRoute == "/student" ? greyColor[300] : null,
             leading: SizedBox(
               height: 25,
               width: 25,
               child: studentImage,
             ),
             title: const Text(
-              'Студенты',
+              'Учащиеся',
               style: styleDrawer,
             ),
             onTap: () {
@@ -65,6 +71,7 @@ class CustomDrawer extends StatelessWidget {
           ),
           if (role == 'ADMINISTRATOR') ...[
             ListTile(
+              tileColor: Get.currentRoute == "/subject" ? greyColor[300] : null,
               leading: SizedBox(
                 height: 25,
                 width: 25,
@@ -80,6 +87,8 @@ class CustomDrawer extends StatelessWidget {
             ),
           ],
           ListTile(
+            tileColor:
+                Get.currentRoute == "/performance" ? greyColor[300] : null,
             leading: SizedBox(
               height: 25,
               width: 25,
@@ -94,6 +103,7 @@ class CustomDrawer extends StatelessWidget {
             },
           ),
           ListTile(
+            tileColor: Get.currentRoute == "/absence" ? greyColor[300] : null,
             leading: SizedBox(
               height: 25,
               width: 25,
@@ -108,6 +118,7 @@ class CustomDrawer extends StatelessWidget {
             },
           ),
           ListTile(
+            tileColor: Get.currentRoute == "/report" ? greyColor[300] : null,
             leading: SizedBox(
               height: 25,
               width: 25,
@@ -123,6 +134,8 @@ class CustomDrawer extends StatelessWidget {
           ),
           if (role == 'ADMINISTRATOR') ...[
             ListTile(
+              tileColor:
+                  Get.currentRoute == "/user-list" ? greyColor[300] : null,
               leading: SizedBox(
                 height: 25,
                 width: 25,
@@ -133,10 +146,11 @@ class CustomDrawer extends StatelessWidget {
                 style: styleDrawer,
               ),
               onTap: () {
-                Navigator.pop(context);
+                Get.toNamed("/user-list");
               },
             ),
             ListTile(
+              tileColor: Get.currentRoute == "/archive" ? greyColor[300] : null,
               leading: SizedBox(
                 height: 25,
                 width: 25,
@@ -147,7 +161,7 @@ class CustomDrawer extends StatelessWidget {
                 style: styleDrawer,
               ),
               onTap: () {
-                Navigator.pop(context);
+                Get.toNamed("/archive");
               },
             ),
           ],
@@ -163,6 +177,7 @@ class CustomDrawer extends StatelessWidget {
             ),
             onTap: () {
               Get.toNamed("/login");
+              Get.deleteAll();
             },
           ),
         ],

@@ -2,15 +2,15 @@ class ListOfSubject {
   int? id;
   int? subjectId;
   int? groupId;
-  int? semesterNumber;
+  int? semesterId;
 
-  ListOfSubject({this.id, this.subjectId, this.groupId, this.semesterNumber});
+  ListOfSubject({this.id, this.subjectId, this.groupId, this.semesterId});
 
   ListOfSubject.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     subjectId = json['subject_id'];
     groupId = json['group_id'];
-    semesterNumber = json['semester_number'];
+    semesterId = json['semester_id'];
   }
 
   Map<String, dynamic> toJson() {
@@ -18,12 +18,12 @@ class ListOfSubject {
     data['id'] = id;
     data['subject_id'] = subjectId;
     data['group_id'] = groupId;
-    data['semester_number'] = semesterNumber;
+    data['semester_id'] = semesterId;
     return data;
   }
 
   @override
   String toString() {
-    return 'ListOfSubject(id: $id, subjectId: $subjectId, groupId: $groupId, semesterNumber: $semesterNumber)';
+    return 'ListOfSubject(id: $id, subjectId: $subjectId, groupId: $groupId, semesterId: $semesterId)';
   }
 }

@@ -1,11 +1,9 @@
 class GroupAbsenceReport {
-  int? groupId; // Идентификатор группы
-  AbsenceReport? absenceReport; // Отчет о пропусках
+  int? groupId;
+  AbsenceReport? absenceReport;
 
-  // Конструктор с именованными параметрами
   GroupAbsenceReport({this.groupId, this.absenceReport});
 
-  // Фабричный конструктор для создания объекта из JSON
   GroupAbsenceReport.fromJson(Map<String, dynamic> json) {
     groupId = json['group_id'];
     absenceReport = json['absence_report'] != null
@@ -13,7 +11,6 @@ class GroupAbsenceReport {
         : null;
   }
 
-  // Метод для преобразования объекта в JSON
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['group_id'] = groupId;
@@ -23,7 +20,6 @@ class GroupAbsenceReport {
     return data;
   }
 
-  // Переопределение метода toString для GroupAbsenceReport
   @override
   String toString() {
     return 'GroupAbsenceReport(groupId: $groupId, absenceReport: $absenceReport)';
@@ -31,15 +27,13 @@ class GroupAbsenceReport {
 }
 
 class AbsenceReport {
-  int? illness; // Пропуски по болезни
-  int? order; // Пропуски по уважительной причине
-  int? resp; // Подтвержденные пропуски
-  int? disresp; // Пропуски по неуважительной причине
+  int? illness;
+  int? order;
+  int? resp;
+  int? disresp;
 
-  // Конструктор с именованными параметрами
   AbsenceReport({this.illness, this.order, this.resp, this.disresp});
 
-  // Фабричный конструктор для создания объекта из JSON
   AbsenceReport.fromJson(Map<String, dynamic> json) {
     illness = json['illness'];
     order = json['order'];
@@ -47,7 +41,6 @@ class AbsenceReport {
     disresp = json['disresp'];
   }
 
-  // Метод для преобразования объекта в JSON
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['illness'] = illness;
@@ -57,7 +50,6 @@ class AbsenceReport {
     return data;
   }
 
-  // Переопределение метода toString для AbsenceReport
   @override
   String toString() {
     return 'AbsenceReport(illness: $illness, order: $order, resp: $resp, disresp: $disresp)';

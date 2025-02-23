@@ -1,6 +1,11 @@
+import 'dart:developer';
+
 import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
+import 'package:education_analizer/design/widgets/dimentions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:education_analizer/controlles/absence_dialog_controller.dart';
 import 'package:education_analizer/repository/absence_repository.dart';
@@ -16,7 +21,7 @@ class AbsenceDialog extends StatelessWidget {
   });
 
   // Функция для создания текстового поля
-  Widget _buildTextField({
+  Widget buildTextField({
     required String label,
     required String hint,
     required Function(String) onChanged,
@@ -41,152 +46,256 @@ class AbsenceDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Obx(() {
-        return Column(
-          children: [
-            Text(
-                style: semestDialogMainTextStyle,
-                'Учащийся: ${absenceDialogController.student.value!.middleName} ${absenceDialogController.student.value!.firstName.toString()[0]}. ${absenceDialogController.student.value!.lastName.toString()[0]}.'),
-            Text(
-                style: semestDialogMainTextStyle,
-                '${absenceDialogController.year.value}.${absenceDialogController.month.value}'),
-          ],
-        );
-      }),
-      content: SingleChildScrollView(
+    AbsenceDialogController absenceDialogController = Get.find();
+    return Dialog(
+      backgroundColor: primaryColor,
+      shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius6)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+            horizontal: padding14, vertical: padding20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Поле для ввода пропусков по болезни
-            Obx(() {
-              return _buildTextField(
-                label: 'Пропуски по болезни',
-                hint: absenceDialogController.absence.value?.absenceIllness
-                        ?.toString() ??
-                    '',
-                onChanged: (value) {
-                  absenceDialogController.absence.value?.absenceIllness =
-                      int.tryParse(value);
-                },
-                controller: TextEditingController(
-                    text: absenceDialogController.absence.value?.absenceIllness
-                            ?.toString() ??
-                        ''),
-              );
-            }),
-            const SizedBox(height: 10),
-
-            // Поле для ввода пропусков по приказу
-            Obx(() {
-              return _buildTextField(
-                label: 'Пропуски по приказу',
-                hint: absenceDialogController.absence.value?.absenceOrder
-                        ?.toString() ??
-                    '',
-                onChanged: (value) {
-                  absenceDialogController.absence.value?.absenceOrder =
-                      int.tryParse(value);
-                },
-                controller: TextEditingController(
-                    text: absenceDialogController.absence.value?.absenceOrder
-                            ?.toString() ??
-                        ''),
-              );
-            }),
-            const SizedBox(height: 10),
-
-            // Поле для ввода пропусков по уважительной причине
-            Obx(() {
-              return _buildTextField(
-                label: 'Пропуски по уважительной причине',
-                hint: absenceDialogController.absence.value?.absenceResp
-                        ?.toString() ??
-                    '',
-                onChanged: (value) {
-                  absenceDialogController.absence.value?.absenceResp =
-                      int.tryParse(value);
-                },
-                controller: TextEditingController(
-                    text: absenceDialogController.absence.value?.absenceResp
-                            ?.toString() ??
-                        ''),
-              );
-            }),
-            const SizedBox(height: 10),
-
-            // Поле для ввода пропусков по неуважительной причине
-            Obx(() {
-              return _buildTextField(
-                label: 'Пропуски по неуважительной причине',
-                hint: absenceDialogController.absence.value?.absenceDisresp
-                        ?.toString() ??
-                    '',
-                onChanged: (value) {
-                  absenceDialogController.absence.value?.absenceDisresp =
-                      int.tryParse(value);
-                },
-                controller: TextEditingController(
-                    text: absenceDialogController.absence.value?.absenceDisresp
-                            ?.toString() ??
-                        ''),
-              );
-            }),
+            Text(
+              "Пропуски учащегося",
+              style: preferTextStyle.copyWith(fontSize: 16),
+            ),
+            Row(
+              children: [
+                Text(
+                  "Учащийся: ",
+                  style: preferTextStyle.copyWith(
+                      fontSize: 14, fontWeight: FontWeight.w400),
+                ),
+                Text(
+                    "${absenceDialogController.student.value!.middleName}.${absenceDialogController.student.value!.firstName![0]}.${absenceDialogController.student.value!.lastName![0]}",
+                    style: preferTextStyle.copyWith(
+                        color: greyColor[600],
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400))
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  "Дата : ",
+                  style: preferTextStyle.copyWith(
+                      fontSize: 14, fontWeight: FontWeight.w400),
+                ),
+                Text(
+                    "${absenceDialogController.selectedDate.value.month}.${absenceDialogController.selectedDate.value.year}",
+                    style: preferTextStyle.copyWith(
+                        color: greyColor[600],
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400))
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "По болезни",
+                        style: labelTextField.copyWith(fontSize: 9),
+                      ),
+                      const SizedBox(
+                        height: 2,
+                      ),
+                      TextField(
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^[0-9]*$')), // Разрешаем только цифры
+                        ],
+                        style: textFieldtext.copyWith(
+                            fontSize: 14,
+                            color: greyColor[600],
+                            fontWeight: FontWeight.bold),
+                        controller:
+                            absenceDialogController.absenceIllnessController,
+                        decoration: textFieldStyle(
+                            hintText: "", pathToImage: "lib/images/illnes.svg"),
+                      )
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  width: 5,
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "По уважительной причине",
+                        style: labelTextField.copyWith(fontSize: 9),
+                      ),
+                      const SizedBox(
+                        height: 2,
+                      ),
+                      TextField(
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^[0-9]*$')), // Разрешаем только цифры
+                        ],
+                        style: textFieldtext.copyWith(
+                            fontSize: 14,
+                            color: greyColor[600],
+                            fontWeight: FontWeight.bold),
+                        controller:
+                            absenceDialogController.absenceRespController,
+                        decoration: textFieldStyle(
+                            hintText: "",
+                            pathToImage: "lib/images/respect.svg"),
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: 5,
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "По приказу",
+                        style: labelTextField.copyWith(fontSize: 9),
+                      ),
+                      const SizedBox(
+                        height: 2,
+                      ),
+                      TextField(
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^[0-9]*$')), // Разрешаем только цифры
+                        ],
+                        style: textFieldtext.copyWith(
+                            fontSize: 14,
+                            color: greyColor[600],
+                            fontWeight: FontWeight.bold),
+                        controller:
+                            absenceDialogController.absenceOrderController,
+                        decoration: textFieldStyle(
+                            hintText: "", pathToImage: "lib/images/order.svg"),
+                      )
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  width: 5,
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "По неуважительной причине",
+                        style: labelTextField.copyWith(fontSize: 9),
+                      ),
+                      const SizedBox(
+                        height: 2,
+                      ),
+                      TextField(
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^[0-9]*$')),
+                        ],
+                        style: textFieldtext.copyWith(
+                            fontSize: 14,
+                            color: greyColor[600],
+                            fontWeight: FontWeight.bold),
+                        controller:
+                            absenceDialogController.absenceDisrespController,
+                        decoration: textFieldStyle(
+                            hintText: "",
+                            pathToImage: "lib/images/unrespect.svg"),
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: padding12,
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                      style: ButtonStyle(
+                          shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8))),
+                          backgroundColor:
+                              const WidgetStatePropertyAll(dialogButtonColor)),
+                      onPressed: () async {
+                        try {
+                          await absenceDialogController.updateAbsence();
+                        } catch (e) {
+                          showSnackBar(title: "Ошибка", message: e.toString());
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text("Сохранить",
+                            style: primaryStyle.copyWith(
+                                fontSize: 16, color: whiteColor)),
+                      )),
+                ),
+              ],
+            )
           ],
         ),
       ),
-      actionsPadding: const EdgeInsets.symmetric(
-          horizontal: 8, vertical: 4), // Уменьшаем отступы вокруг кнопок
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 10, vertical: 4), // Компактный внутренний отступ
-            minimumSize:
-                const Size(0, 32), // Устанавливаем минимальную высоту кнопки
-            textStyle: const TextStyle(fontSize: 14), // Меньший размер шрифта
-          ),
-          child: const Text('Закрыть'),
-        ),
-        Obx(() {
-          return TextButton(
-            onPressed: () async {
-              if (absenceDialogController.isEditMode.value) {
-                await absenceRepository.updateAbsence(
-                  absenceDialogController.absence.value!.id!,
-                  absenceDialogController.absence.value!,
-                );
-              } else {
-                await absenceRepository.createAbsence(
-                  studentId: absenceDialogController.student.value!.id!,
-                  year: absenceDialogController.year.value!,
-                  month: absenceDialogController.month.value!,
-                  absenceIllness:
-                      absenceDialogController.absence.value?.absenceIllness ??
-                          0,
-                  absenceOrder:
-                      absenceDialogController.absence.value?.absenceOrder ?? 0,
-                  absenceResp:
-                      absenceDialogController.absence.value?.absenceResp ?? 0,
-                  absenceDisresp:
-                      absenceDialogController.absence.value?.absenceDisresp ??
-                          0,
-                );
-              }
-              Navigator.pop(context);
-            },
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              minimumSize: const Size(0, 32),
-              textStyle: const TextStyle(fontSize: 14),
-            ),
-            child: Text(absenceDialogController.isEditMode.value
-                ? 'Обновить'
-                : 'Создать'),
-          );
-        }),
-      ],
     );
   }
+}
+
+InputDecoration textFieldStyle(
+    {required String hintText, required String pathToImage}) {
+  return InputDecoration(
+    prefixIconConstraints: const BoxConstraints(minHeight: 24, minWidth: 24),
+    prefixIcon: Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: SvgPicture.asset(
+        color: greyColor,
+        pathToImage,
+      ),
+    ),
+    filled: true,
+    fillColor: primary8Color,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(radius8),
+      borderSide: BorderSide(
+        color: greyColor[400]!,
+        width: 1.0,
+      ),
+    ),
+    enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(radius8),
+        borderSide: const BorderSide(
+          color: greyColor,
+          width: 1.0,
+        )),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(radius8),
+      borderSide: BorderSide(
+        color: greyColor[600]!,
+        width: 2,
+      ),
+    ),
+    hintText: hintText,
+    hintStyle: textFieldtext,
+  );
 }

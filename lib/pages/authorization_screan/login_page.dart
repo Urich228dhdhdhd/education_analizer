@@ -1,4 +1,5 @@
 import 'package:education_analizer/controlles/login_page_controller.dart';
+import 'package:education_analizer/design/dialog/app_bar.dart';
 import 'package:education_analizer/design/dialog/styles.dart';
 import 'package:education_analizer/design/widgets/colors.dart';
 import 'package:education_analizer/design/widgets/dimentions.dart';
@@ -12,7 +13,7 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    LoginPageController loginPageController = Get.find();
+    LoginPageController controller = Get.find();
     return WillPopScope(
       onWillPop: () async {
         SystemNavigator.pop();
@@ -27,28 +28,26 @@ class LoginPage extends StatelessWidget {
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Spacer(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 0),
-                      child: Image.asset(
-                        'lib/images/college_image.png',
-                        height: 150,
-                        width: 150,
+                Expanded(
+                    flex: 2,
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'lib/images/college_image.png',
+                            height: 150,
+                            width: 150,
+                          ),
+                          const SizedBox(width: 20),
+                          const Text(
+                            'УО«Минский\n Государственный\nКолледж Цифровых\n Технологий»',
+                            style: mainAuthorizationTextStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 20),
-                    const Text(
-                      'УО«Минский\n Государственный\nКолледж Цифровых\n Технологий»',
-                      style: mainAuthorizationTextStyle,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                const SizedBox(height: 30),
+                    )),
                 Container(
                   constraints: const BoxConstraints(
                     maxWidth: 400,
@@ -72,18 +71,23 @@ class LoginPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 GestureDetector(
-                  onTap: loginPageController.launchURL,
+                  onTap: controller.launchURL,
                   child: const Text(
                     "Сайт колледжа",
                     style: linkAuthorizationTextStyle,
                   ),
                 ),
+                // const SizedBox(height: 5),
+                // const Text(
+                //   "Сообщить об ошибке",
+                //   style: linkAuthorizationTextStyle,
+                // ),
                 const Spacer(),
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 10),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
                   child: Text(
                     "© 2024-2025 Учреждение образования «Минский\nГосударственный Колледж  Цифровых Технологий",
-                    style: style3,
+                    style: style3.copyWith(color: Colors.black),
                     textAlign: TextAlign.center,
                   ),
                 ),

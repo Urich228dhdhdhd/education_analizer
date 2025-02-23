@@ -1,6 +1,21 @@
 import 'package:education_analizer/design/widgets/colors.dart';
 import 'package:flutter/material.dart';
 
+const TextStyle primaryStyle = TextStyle(
+    fontFamily: "Inter",
+    fontWeight: FontWeight.w500,
+    color: primary6Color,
+    fontSize: 48);
+TextStyle labelTextField = TextStyle(
+    fontFamily: "Inter",
+    fontWeight: FontWeight.w500,
+    color: greyColor[600],
+    fontSize: 12);
+const TextStyle textFieldtext = TextStyle(
+    fontFamily: "Inter",
+    fontWeight: FontWeight.w400,
+    color: greyColor,
+    fontSize: 12);
 const TextStyle mainAuthorizationTextStyle = TextStyle(
   fontSize: 16,
   fontWeight: FontWeight.normal,

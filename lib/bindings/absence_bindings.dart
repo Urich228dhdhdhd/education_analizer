@@ -12,7 +12,8 @@ class AbsenceBindings implements Bindings {
     Get.lazyPut<GroupRepository>(() => GroupRepository());
     Get.lazyPut<StudentRepository>(() => StudentRepository());
     Get.lazyPut<AbsenceRepository>(() => AbsenceRepository());
-    Get.lazyPut<AbsenceDialogController>(() => AbsenceDialogController());
+    Get.lazyPut<AbsenceDialogController>(() => AbsenceDialogController(
+        absenceRepository: Get.find<AbsenceRepository>()));
     Get.lazyPut<AbsencePageController>(() => AbsencePageController(
         authController: Get.find<AuthController>(),
         groupRepository: Get.find<GroupRepository>(),

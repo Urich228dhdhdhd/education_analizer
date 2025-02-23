@@ -1,32 +1,35 @@
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:education_analizer/model/subject.dart';
 import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
+
+import '../design/widgets/dimentions.dart';
 
 class SubjectRepository extends GetxService {
   final String url = "$mainUrl/api/subjects"; // 192.168.100.8 localhost
   final Dio dio = Dio();
 
   // Получить все предметы
-  Future<List<dynamic>> getSubjects() async {
+  Future<List<Subject>> getSubjects() async {
     try {
       final response = await dio.get(url);
-      return response.data; // Возвращаем список предметов
-    } catch (e) {
-      print("Ошибка при получении предметов: $e");
-      throw Exception('Ошибка при получении предметов');
+      return response.data
+          .map<Subject>((subject) => Subject.fromJson(subject))
+          .toList(); // Возвращаем список предметов
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
   // Получить предмет по ID
-  Future<dynamic> getSubjectById(int id) async {
+  Future<Subject> getSubjectById(int id) async {
     try {
       final response = await dio.get('$url/$id');
-      return response.data; // Возвращаем предмет
-    } catch (e) {
-      print("Ошибка при получении предмета с ID $id: $e");
-      throw Exception('Ошибка при получении предмета');
+      return Subject.fromJson(response.data); // Возвращаем предмет
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -38,13 +41,9 @@ class SubjectRepository extends GetxService {
         'subject_name_short': subjectNameShort,
         'subject_name_long': subjectNameLong,
       });
-      if (response.statusCode == 201) {
-        return response.data;
-      } else {
-        throw Exception(response.data['message'] ?? 'Ошибка авторизации');
-      }
+      return response.data;
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Ошибка при авторизации');
+      throw handleDioError(e);
     }
   }
 
@@ -52,9 +51,8 @@ class SubjectRepository extends GetxService {
   Future<void> deleteSubject(int id) async {
     try {
       await dio.delete('$url/$id');
-    } catch (e) {
-      print("Ошибка при удалении предмета с ID $id: $e");
-      throw Exception('Ошибка при удалении предмета');
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -66,13 +64,9 @@ class SubjectRepository extends GetxService {
         'subject_name_short': subjectNameShort,
         'subject_name_long': subjectNameLong,
       });
-      if (response.statusCode == 200) {
-        return response.data;
-      } else {
-        throw Exception(response.data['message'] ?? 'Ошибка авторизации');
-      }
+      return response.data;
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Ошибка при авторизации');
+      throw handleDioError(e);
     }
   }
 }

@@ -20,11 +20,11 @@ class LoginForm extends StatelessWidget {
 
     return Form(
       child: Column(
-        mainAxisSize: MainAxisSize.min, // Минимальное пространство
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
+          Text(
             'Анализ учебного\nпроцесса',
-            style: mainAuthorizationTextStyle,
+            style: mainAuthorizationTextStyle.copyWith(fontSize: 21),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
@@ -34,18 +34,35 @@ class LoginForm extends StatelessWidget {
             decoration: stylishInput(label: "Логин", image: userImage),
           ),
           const SizedBox(height: 15),
-          TextField(
-              controller: passwordController,
-              style: style2,
-              obscureText: true,
-              decoration: stylishInput(label: "Пароль", image: passwordImage)),
+          Obx(() {
+            return TextField(
+                controller: passwordController,
+                style: style2,
+                obscureText: !pageController.isPasswordVisible.value,
+                decoration: stylishInput(label: "Пароль", image: passwordImage)
+                    .copyWith(
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      pageController.isPasswordVisible.value
+                          ? Icons.sentiment_satisfied_alt_outlined
+                          : Icons.sentiment_very_dissatisfied,
+                      color: primary6Color,
+                    ),
+                    onPressed: () {
+                      pageController.isPasswordVisible.toggle();
+                    },
+                  ),
+                ));
+          }),
           const SizedBox(height: 25),
           ElevatedButton(
-              onPressed: () {
-                pageController.goAuth(
-                    login: loginController.text.toString(),
-                    password: passwordController.text.toString());
-              },
+              onPressed: pageController.isButtonDisabled.value
+                  ? null
+                  : () {
+                      pageController.goAuth(
+                          login: loginController.text.toString(),
+                          password: passwordController.text.toString());
+                    },
               style: ElevatedButton.styleFrom(
                   backgroundColor: primary6Color,
                   minimumSize: const Size(double.infinity, 55)),
@@ -65,8 +82,28 @@ class LoginForm extends StatelessWidget {
         child: image,
       ),
       border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radius32),
-          borderSide: const BorderSide(color: Colors.grey)),
+        borderRadius: BorderRadius.circular(radius20), // Закругленные углы
+        borderSide: BorderSide(
+          color: greyColor[400]!, // Цвет границы
+          width: 1.0, // Толщина границы
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius20), // Закругленные углы
+          borderSide: const BorderSide(
+            color: greyColor, // Цвет границы в обычном состоянии
+            width: 1.0,
+          )),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14), // Закругленные углы при фокусе
+        borderSide: const BorderSide(
+          color: primary6Color, // Цвет границы при фокусе
+          width: 2,
+        ),
+      ),
+      // border: OutlineInputBorder(
+      //     borderRadius: BorderRadius.circular(radius32),
+      //     borderSide: const BorderSide(color: Colors.grey)),
       filled: true,
       fillColor: primary4Color,
     );

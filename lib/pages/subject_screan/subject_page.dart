@@ -8,7 +8,10 @@ import 'package:education_analizer/design/widgets/colors.dart';
 import 'package:education_analizer/design/widgets/dimentions.dart';
 import 'package:education_analizer/pages/subject_screan/subject_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+
+import '../../model/subject.dart';
 
 class SubjectPage extends StatelessWidget {
   const SubjectPage({super.key});
@@ -17,10 +20,17 @@ class SubjectPage extends StatelessWidget {
   Widget build(BuildContext context) {
     SubjectPageController subjectPageController = Get.find();
     FocusNode focusNode = FocusNode();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await subjectPageController.fetchSubjects();
+    });
+    subjectPageController.searchText.addListener(() {
+      subjectPageController
+          .searchSubjects(subjectPageController.searchText.text);
+    });
 
     return WillPopScope(
       onWillPop: () async {
-        Get.offAllNamed("/home");
+        homeRoute();
         return false;
       },
       child: Scaffold(
@@ -30,183 +40,292 @@ class SubjectPage extends StatelessWidget {
             CustomAppBar(role: subjectPageController.authController.role.value),
         drawer:
             CustomDrawer(role: subjectPageController.authController.role.value),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Align(
-                  alignment: Alignment.topRight,
-                  child: FloatingActionButton(
-                    backgroundColor: primary6Color,
-                    child: const Icon(Icons.add, color: Colors.white),
-                    onPressed: () {
-                      focusNode.unfocus();
-                      final dialogController = SubjectDialogController(
-                          subjectPageController: subjectPageController);
-                      Get.dialog(SubjectDialog(controller: dialogController))
-                          .then((result) {
-                        if (result == true) {
-                          subjectPageController
-                              .fetchSubjects(); // Обновляем список предметов
-                        }
-                      });
-                    },
-                  ),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(padding14),
+            child: Column(
+              // mainAxisSize: MainAxisSize.min,
+              children: [
+                CreateButtonColumn(
+                    focusNode: focusNode,
+                    subjectPageController: subjectPageController),
+                const SizedBox(
+                  height: padding14,
                 ),
-              ),
-              ConstrainedBox(
-                constraints: const BoxConstraints(
-                  minWidth: 400,
-                  maxWidth: 700,
-                ), // Максимальная ширина контейнера
-                child: Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(radius32),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0xFFc2d0e3),
-                        spreadRadius: 10,
-                        blurRadius: 10,
-                        offset: Offset(3, 3),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Список предметов',
-                        textAlign: TextAlign.center,
-                        style: semestDialogMainTextStyle,
-                      ),
-                      const SizedBox(height: 15),
-                      TextField(
-                        style: inputDialogSemesters,
-                        focusNode: focusNode,
-                        decoration: InputDecoration(
-                          labelText: "Поиск предмета",
-                          labelStyle: styleDrawer,
-                          filled: true,
-                          fillColor: primary8Color,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          suffixIcon:
-                              const Icon(Icons.search, color: Colors.grey),
-                        ),
-                        onChanged: (value) {
-                          subjectPageController.searchText.value = value;
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        height: 400,
-                        child: Obx(() {
-                          if (subjectPageController.isLoading.value) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-
-                          if (subjectPageController.subjects.isEmpty) {
-                            return const Center(child: Text('Нет предметов'));
-                          }
-
-                          return ListView.builder(
-                            itemCount:
-                                subjectPageController.filteredSubject.length,
-                            itemBuilder: (context, index) {
-                              final subject =
-                                  subjectPageController.filteredSubject[index];
-                              return Card(
-                                color: primary8Color,
-                                margin: const EdgeInsets.symmetric(vertical: 4),
-                                child: ListTile(
-                                  title: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        subject.subjectNameShort.toString(),
-                                        style: subjectMainTextDialogSemesters,
-                                      ),
-                                      Text(subject.subjectNameLong.toString(),
-                                          style: shortSubName),
-                                    ],
-                                  ),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit),
-                                        onPressed: () {
-                                          focusNode.unfocus();
-                                          final dialogController =
-                                              SubjectDialogController(
-                                                  subjectPageController:
-                                                      subjectPageController);
-                                          dialogController.setSubject(
-                                              subject.id,
-                                              shortName:
-                                                  subject.subjectNameShort,
-                                              longName:
-                                                  subject.subjectNameLong);
-                                          Get.dialog(SubjectDialog(
-                                                  controller: dialogController))
-                                              .then((result) {
-                                            if (result == true) {
-                                              subjectPageController
-                                                  .fetchSubjects();
-                                            }
-                                          });
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete),
-                                        onPressed: () async {
-                                          focusNode.unfocus();
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              return ConfirmationDialog(
-                                                title: "Удаление предмета",
-                                                message:
-                                                    "Вы уверены, что хотете удалить: ${subject.subjectNameLong}",
-                                                onConfirm: () async {
-                                                  await subjectPageController
-                                                      .subjectRepository
-                                                      .deleteSubject(
-                                                          subject.id);
-                                                  subjectPageController
-                                                      .fetchSubjects();
-                                                },
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(radius12),
+                        color: whiteColor),
+                    child: Padding(
+                      padding: const EdgeInsets.all(padding12),
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: subjectPageController.searchText,
+                            // onChanged: (value) {
+                            //   subjectPageController.searchText.value = value;
+                            // },
+                            style: labelTextField.copyWith(fontSize: 14),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: primary8Color,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(radius8),
+                                borderSide: const BorderSide(
+                                  color: greyColor,
+                                  width: 1.0,
                                 ),
-                              );
-                            },
-                          );
-                        }),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(radius8),
+                                  borderSide: const BorderSide(
+                                    color: greyColor,
+                                    width: 1.0,
+                                  )),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(radius8),
+                                borderSide: BorderSide(
+                                  color: greyColor[600]!,
+                                  width: 2,
+                                ),
+                              ),
+                              hintText: "Поиск предметов",
+                              hintStyle: textFieldtext.copyWith(fontSize: 14),
+                              suffixIcon: const Icon(
+                                Icons.search,
+                                color: greyColor,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 14,
+                          ),
+                          Obx(() {
+                            if (subjectPageController.subjects.isEmpty) {
+                              return Expanded(
+                                  child: Center(
+                                      child: Text('Нет предметов',
+                                          style: textFieldtext.copyWith(
+                                              fontSize: 14))));
+                            }
+                            return Expanded(
+                              child: ListView.builder(
+                                itemCount: subjectPageController
+                                    .filteredSubjects.length,
+                                itemBuilder: (context, index) {
+                                  Subject subject = subjectPageController
+                                      .filteredSubjects[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                        bottom: padding12),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(radius8),
+                                        color: primaryColor,
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                    "${subject.subjectNameShort}",
+                                                    style:
+                                                        primaryStyle.copyWith(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600)),
+                                                Container(
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                          maxWidth: 230),
+                                                  child: Text(
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    "${subject.subjectNameLong}",
+                                                    style:
+                                                        primaryStyle.copyWith(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w400),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () async {
+                                                    try {
+                                                      focusNode.unfocus();
+                                                      final dialogController =
+                                                          SubjectDialogController(
+                                                              subjectPageController:
+                                                                  subjectPageController);
+                                                      dialogController.setSubject(
+                                                          subject.id!,
+                                                          shortName: subject
+                                                              .subjectNameShort,
+                                                          longName: subject
+                                                              .subjectNameLong);
+                                                      Get.dialog(SubjectDialog(
+                                                              controller:
+                                                                  dialogController))
+                                                          .then((result) async {
+                                                        if (result == true) {
+                                                          await subjectPageController
+                                                              .fetchSubjects();
+                                                        }
+                                                      });
+                                                    } catch (e) {
+                                                      showSnackBar(
+                                                          title: "Ошибка",
+                                                          message:
+                                                              e.toString());
+                                                    }
+                                                  },
+                                                  child: SvgPicture.asset(
+                                                    "lib/images/edit.svg",
+                                                    width: 26,
+                                                    height: 26,
+                                                    color: greyColor[600],
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                  width: 28,
+                                                ),
+                                                GestureDetector(
+                                                  onTap: () async {
+                                                    try {
+                                                      focusNode.unfocus();
+
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return ConfirmationDialog(
+                                                            title:
+                                                                "Удаление предмета",
+                                                            message:
+                                                                "При удалении предмета все данные (оценки, семестры преподавания) связанные с ним будут удалены!",
+                                                            onConfirm:
+                                                                () async {
+                                                              await subjectPageController
+                                                                  .subjectRepository
+                                                                  .deleteSubject(
+                                                                      subject
+                                                                          .id!);
+                                                              await subjectPageController
+                                                                  .fetchSubjects();
+                                                              showSnackBar(
+                                                                  title:
+                                                                      "Успех",
+                                                                  message:
+                                                                      "Предмет успешно удален",
+                                                                  backgroundColor:
+                                                                      orangeColor[
+                                                                          300]!);
+                                                            },
+                                                          );
+                                                        },
+                                                      );
+                                                    } catch (e) {
+                                                      showSnackBar(
+                                                          title: "Ошибка",
+                                                          message:
+                                                              e.toString());
+                                                    }
+                                                  },
+                                                  child: SvgPicture.asset(
+                                                    "lib/images/delete.svg",
+                                                    width: 26,
+                                                    height: 26,
+                                                    color: greyColor[600],
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                  width: 7,
+                                                )
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          })
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            ],
+                )
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class CreateButtonColumn extends StatelessWidget {
+  const CreateButtonColumn({
+    super.key,
+    required this.focusNode,
+    required this.subjectPageController,
+  });
+
+  final FocusNode focusNode;
+  final SubjectPageController subjectPageController;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          'Список предметов',
+          style: semestDialogMainTextStyle,
+        ),
+        FloatingActionButton(
+          heroTag: null,
+          backgroundColor: secColor,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius8),
+          ),
+          onPressed: () async {
+            focusNode.unfocus();
+            final dialogController = SubjectDialogController(
+                subjectPageController: subjectPageController);
+            Get.dialog(SubjectDialog(controller: dialogController))
+                .then((result) {
+              if (result == true) {
+                subjectPageController.fetchSubjects();
+              }
+            });
+          },
+          child: const Icon(
+            Icons.add,
+            color: whiteColor,
+            size: 36,
+          ),
+        ),
+      ],
     );
   }
 }

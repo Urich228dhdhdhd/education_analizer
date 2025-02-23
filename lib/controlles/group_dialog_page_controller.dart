@@ -1,6 +1,10 @@
+import 'dart:developer';
+
 import 'package:education_analizer/controlles/group_page_controller.dart';
 import 'package:education_analizer/controlles/semester_selection_controller.dart';
+import 'package:education_analizer/model/group.dart';
 import 'package:education_analizer/model/list_of_subject.dart';
+import 'package:education_analizer/model/semester.dart';
 import 'package:education_analizer/model/subject.dart';
 import 'package:education_analizer/repository/group_repository.dart';
 import 'package:education_analizer/repository/listofsubject_repository.dart';
@@ -21,6 +25,7 @@ class GroupDialogPageController extends GetxController {
   var subjects = <Subject>[].obs;
   var filteredSubjects = <Subject>[].obs;
   var listOfSubjects = <ListOfSubject>[].obs;
+  var groupSemesters = <Semester>[].obs;
   var isLoading = false.obs;
   var subjectsByGroupAndSubject = <ListOfSubject>[].obs;
   var groupId = Rx<int?>(null);
@@ -50,9 +55,11 @@ class GroupDialogPageController extends GetxController {
   }) async {
     try {
       final newGroup = await groupRepository.createGroup(
-        groupName: groupName,
-        curatorId: curatorId,
-      );
+          group: Group(
+              groupName: groupName,
+              curatorId: null,
+              startYear: startYear.value,
+              endYear: endYear.value));
 
       groupPageController.findGroupsByRole();
 
@@ -82,10 +89,7 @@ class GroupDialogPageController extends GetxController {
   }) async {
     try {
       final updatedGroup = await groupRepository.updateGroup(
-        id: id,
-        groupName: groupName,
-        curatorId: curatorId,
-      );
+          group: Group(id: id, groupName: groupName, curatorId: curatorId));
 
       groupPageController.findGroupsByRole();
 
@@ -135,12 +139,11 @@ class GroupDialogPageController extends GetxController {
   Future<void> fetchAllSubjects() async {
     try {
       isLoading(true);
+      groupSemesters.clear();
+
       final response = await subjectRepository.getSubjects();
 
-      List<Subject> fetchedSubjects = response
-          .map<Subject>((subject) => Subject.fromJson(subject))
-          .toList();
-
+      List<Subject> fetchedSubjects = response;
       subjects.assignAll(fetchedSubjects);
       // log(subjects.toString());
       filteredSubjects.assignAll(fetchedSubjects);
@@ -154,6 +157,19 @@ class GroupDialogPageController extends GetxController {
     } finally {
       isLoading(false);
     }
+  }
+
+  Future<List<int>> getSemestersNumbersForSubject(
+      List<ListOfSubject> listOfSubjects) async {
+    List<int> semesterNumberList = [];
+    for (var listOfSub in listOfSubjects) {
+      var semester =
+          await semesterRepository.getSemesterById(listOfSub.semesterId!);
+      semesterNumberList.add(semester.semesterNumber!);
+    }
+    semesterNumberList.sort();
+    // log(semesterNumberList.toString());
+    return semesterNumberList;
   }
 
   void filterSubjects(String query) {
@@ -173,14 +189,9 @@ class GroupDialogPageController extends GetxController {
     listOfSubjects.clear();
     isLoading.value = true;
     try {
-      final response =
+      List<ListOfSubject> fetchedListOfSubject =
           await listofsubjectRepository.getListOfSubjectsByGroupId(groupId);
 
-      List<ListOfSubject> fetchedListOfSubject = response
-          .map<ListOfSubject>(
-              (listofsubj) => ListOfSubject.fromJson(listofsubj))
-          .toList();
-      // log(fetchedListOfSubject.toString());
       listOfSubjects.assignAll(fetchedListOfSubject);
       isLoading.value = false;
       return fetchedListOfSubject;
@@ -210,5 +221,51 @@ class GroupDialogPageController extends GetxController {
         duration: const Duration(seconds: 2),
       );
     }
+  }
+
+  Future<void> checkSemesters() async {
+    for (int year = startYear.value!; year <= endYear.value!; year++) {
+      for (int semesterPart = 1; semesterPart <= 2; semesterPart++) {
+        int semesterNumber = (year - startYear.value!) * 2 + semesterPart;
+
+        bool exists = await semesterRepository.isSemesterExist(
+          semesterNumber: semesterNumber,
+          semesterYear: year,
+        );
+        if (!exists) {
+          semesterRepository.createSemester(
+              semesterNumber: semesterNumber,
+              semesterYear: year,
+              semesterPart: semesterPart);
+        }
+      }
+    }
+  }
+
+  Future<void> getSemestersForGroup() async {
+    final group = await groupRepository.getGroupById(groupId.value!);
+    for (var year = group.startYear; year! <= group.endYear!; year++) {
+      for (int semesterPart = 1; semesterPart <= 2; semesterPart++) {
+        int semesterNumber = (year - group.startYear!) * 2 + semesterPart;
+
+        if (year == group.startYear) {
+          semesterPart = 2;
+        }
+        bool exists = await semesterRepository.isSemesterExist(
+          semesterNumber: semesterNumber,
+          semesterYear: year,
+        );
+        if (!exists) {
+          semesterRepository.createSemester(
+              semesterNumber: semesterNumber,
+              semesterYear: year,
+              semesterPart: semesterPart);
+        }
+        var semester = await semesterRepository.getSemesterBySemesterYear(
+            semesterNumber: semesterNumber, year: year);
+        groupSemesters.add(semester);
+      }
+    }
+    // log(groupSemesters.toString());
   }
 }

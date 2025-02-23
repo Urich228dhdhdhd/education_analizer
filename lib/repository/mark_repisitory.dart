@@ -5,6 +5,8 @@ import 'package:education_analizer/model/mark.dart';
 import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
 
+import '../design/widgets/dimentions.dart';
+
 class MarkRepository extends GetxService {
   final String url = "$mainUrl/api/marks"; // URL сервера API
   final Dio dio = Dio();
@@ -16,8 +18,8 @@ class MarkRepository extends GetxService {
       return (response.data as List)
           .map((markJson) => Mark.fromJson(markJson))
           .toList();
-    } catch (e) {
-      throw Exception("Ошибка при получении всех отметок: $e");
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -26,8 +28,8 @@ class MarkRepository extends GetxService {
     try {
       final response = await dio.get("$url/$markId");
       return Mark.fromJson(response.data);
-    } catch (e) {
-      throw Exception("Ошибка при получении отметки: $e");
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -52,55 +54,36 @@ class MarkRepository extends GetxService {
       return (response.data as List)
           .map((markJson) => Mark.fromJson(markJson))
           .toList();
-    } catch (e) {
-      throw Exception("Ошибка при получении оценок по фильтру: $e");
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
   // Создание новой оценки
-  Future<Mark> createMark({
-    required int studentId,
-    required int semesterId,
-    required int subjectId,
-    required String mark,
-  }) async {
+  Future<Mark> createMark({required Mark mark}) async {
     try {
+      final markData = mark.toJson();
       final response = await dio.post(
         url,
-        data: {
-          "student_id": studentId,
-          "semester_id": semesterId,
-          "subject_id": subjectId,
-          "mark": mark,
-        },
+        data: markData,
       );
       return Mark.fromJson(response.data);
-    } catch (e) {
-      throw Exception("Ошибка при создании оценки: $e");
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
   // Обновление оценки
-  Future<Mark> updateMark({
-    required int markId,
-    required int? studentId,
-    required int? semesterId,
-    required int? subjectId,
-    required String? mark,
-  }) async {
+  Future<Mark> updateMark({required Mark mark}) async {
     try {
+      final markData = mark.toJson();
       final response = await dio.put(
-        "$url/$markId",
-        data: {
-          if (studentId != null) "student_id": studentId,
-          if (semesterId != null) "semester_id": semesterId,
-          if (subjectId != null) "subject_id": subjectId,
-          if (mark != null) "mark": mark,
-        },
+        "$url/${mark.id}",
+        data: markData,
       );
       return Mark.fromJson(response.data);
-    } catch (e) {
-      throw Exception("Ошибка при обновлении оценки: $e");
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -108,8 +91,8 @@ class MarkRepository extends GetxService {
   Future<void> deleteMark({required int markId}) async {
     try {
       await dio.delete("$url/$markId");
-    } catch (e) {
-      throw Exception("Ошибка при удалении оценки: $e");
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 }

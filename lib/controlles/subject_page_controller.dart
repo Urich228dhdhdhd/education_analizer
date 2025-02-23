@@ -1,37 +1,41 @@
 import 'package:education_analizer/controlles/auth_controller.dart';
 import 'package:education_analizer/model/subject.dart';
 import 'package:education_analizer/repository/subject_repository.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 class SubjectPageController extends GetxController {
   final AuthController authController;
   final SubjectRepository subjectRepository;
 
-  var subjects = <dynamic>[].obs; // RxList для реактивного списка
+  var subjects = <Subject>[].obs;
+  var filteredSubjects = <Subject>[].obs;
   var isLoading = false.obs;
-  var searchText = "".obs;
+  TextEditingController searchText = TextEditingController();
 
   SubjectPageController({
     required this.subjectRepository,
     required this.authController,
   });
 
-  @override
-  void onInit() {
-    super.onInit();
-    fetchSubjects(); // Загружаем предметы при инициализации
-  }
-
-  List<dynamic> get filteredSubject {
-    if (searchText.isEmpty) {
-      return subjects;
+  void searchSubjects(String query) {
+    if (query.isEmpty || query == "") {
+      filteredSubjects
+          .assignAll([...subjects]); // Показать все, если запрос пустой
     } else {
-      return subjects.where((subject) {
-        final longName = subject.subjectNameLong.toString().toLowerCase();
-        final shortName = subject.subjectNameShort.toString().toLowerCase();
-        final query = searchText.value.toLowerCase();
-        return longName.contains(query) || shortName.contains(query);
-      }).toList();
+      filteredSubjects.assignAll(
+        [...subjects]
+            .where((info) =>
+                (info.subjectNameShort
+                        ?.toLowerCase()
+                        .contains(query.toLowerCase()) ??
+                    false) ||
+                (info.subjectNameLong
+                        ?.toLowerCase()
+                        .contains(query.toLowerCase()) ??
+                    false))
+            .toList(),
+      );
     }
   }
 
@@ -39,14 +43,14 @@ class SubjectPageController extends GetxController {
   Future<void> fetchSubjects() async {
     try {
       isLoading(true);
-      List<dynamic> fetchedSubjects = await subjectRepository.getSubjects();
-      // Преобразуем List<dynamic> в List<Subject>
-      List<Subject> subjectList = fetchedSubjects
-          .map((subjectJson) => Subject.fromJson(subjectJson))
-          .toList();
+      List<Subject> subjectList = await subjectRepository.getSubjects();
 
       // Обновляем реактивный список
       subjects.assignAll(subjectList);
+      filteredSubjects.assignAll(subjectList);
+      if (searchText.text.isNotEmpty) {
+        searchSubjects(searchText.text);
+      }
     } catch (e) {
       throw Exception("Ошибка при загрузке предметов: $e");
     } finally {

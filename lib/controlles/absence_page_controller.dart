@@ -74,13 +74,11 @@ class AbsencePageController extends GetxController {
   // Новый метод для загрузки пропусков
   Future<void> loadAbsences() async {
     if (selectedGroupId.value == null) {
-      log("Группа не выбрана, пропуски не могут быть загружены.");
       return;
     }
 
     try {
       isLoading(true);
-      log("message");
       var loadedAbsences = <Map<int, Absence?>>[];
 
       for (var student in students) {
@@ -91,7 +89,6 @@ class AbsencePageController extends GetxController {
         );
         loadedAbsences.add({student.id!: absence});
       }
-      log(loadedAbsences.toString());
       absences.assignAll(loadedAbsences); // Обновляем список пропусков
       isLoading(false);
     } catch (e) {

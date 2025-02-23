@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:education_analizer/design/widgets/dimentions.dart';
 import 'package:education_analizer/model/user.dart';
 import 'package:education_analizer/repository/main_url.dart';
 import 'package:get/get.dart';
@@ -10,49 +11,47 @@ class UserRepository extends GetxService {
   final dio = Dio();
 
   Future<List<User>> getAllUsers() async {
-    final response = await dio.get(url);
-    if (response.statusCode == 200) {
+    try {
+      final response = await dio.get(url);
       return response.data.map<User>((e) => User.fromJson(e)).toList();
-    } else {
-      throw Error();
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
-  Future<User> getUser(int id) async {
-    final response = await dio.get("$url/$id");
-    if (response.statusCode == 200) {
+  Future<User> getUserbyId(int id) async {
+    try {
+      final response = await dio.get("$url/$id");
       return User.fromJson(response.data);
-    } else {
-      throw Error();
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
-  Future<void> createUser(User user) async {
-    final Map<String, dynamic> userData = user.toJson();
-    final response = await dio.post("$url/", data: userData);
-    if (response.statusCode == 201) {
-      log("User create");
-    } else {
-      throw Error();
+  Future<User> createUser(User user) async {
+    try {
+      final Map<String, dynamic> userData = user.toJson();
+      final response = await dio.post("$url/", data: userData);
+      return User.fromJson(response.data);
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
   Future<void> updateUser(User user) async {
-    final Map<String, dynamic> userData = user.toJson();
-    final response = await dio.put("$url/${user.id}", data: userData);
-    if (response.statusCode == 200) {
-      log("${user.username} обнавлен");
-    } else {
-      throw Error();
+    try {
+      final Map<String, dynamic> userData = user.toJson();
+      await dio.put("$url/${user.id}", data: userData);
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
   Future<void> deleteUser(int id) async {
-    final response = await dio.delete("$url/$id");
-    if (response.statusCode == 204) {
-      log("Удалено успешно");
-    } else {
-      throw Error();
+    try {
+      await dio.delete("$url/$id");
+    } on DioException catch (e) {
+      throw handleDioError(e);
     }
   }
 
@@ -63,13 +62,10 @@ class UserRepository extends GetxService {
         "password": password,
       });
 
-      if (response.statusCode == 200) {
-        return User.fromJson(response.data["user"]);
-      } else {
-        throw Exception(response.data['message'] ?? 'Ошибка авторизации');
-      }
+      return User.fromJson(response.data["user"]);
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Ошибка при авторизации');
+      throw handleDioError(e);
+      //  errorMessage;
     }
   }
 }
